@@ -1,0 +1,22 @@
+{
+  "name": "phishing-detection-frontend",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "latest",
+    "axios": "^1.20.0",
+    "jwt-decode": "^4.0.0",
+    "ra-data-simple-rest": "^5.15.4",
+    "react": "latest",
+    "react-admin": "^5.15.4",
+    "react-dom": "latest",
+    "react-router-dom": "^7.18.4",
+    "typescript": "latest",
+    "vite": "latest"
+  }
+}
