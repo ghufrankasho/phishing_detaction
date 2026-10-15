@@ -14,6 +14,7 @@ export default function Auth({ initialMode = "signin" }) {
     name: "",
     email: "",
     password: "",
+    role: "",
     password_confirmation: "",
   });
   const [signInForm, setSignInForm] = useState({ email: "", password: "" });
@@ -21,7 +22,7 @@ export default function Auth({ initialMode = "signin" }) {
   const [signInError, setSignInError] = useState("");
 
   const handleSignUpChange = (e) =>
-    setSignUpForm({ ...signUpForm, [e.target.name]: e.target.value });
+    setSignUpForm({ ...signUpForm, [e.target.name]: e.target.value,[e.target.role]:"user" });
 
   const handleSignInChange = (e) =>
     setSignInForm({ ...signInForm, [e.target.name]: e.target.value });

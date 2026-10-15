@@ -38,7 +38,7 @@ export default function Welcome() {
             onClick={handleStart}
             disabled={loading}
           >
-            {user ? "الانتقال للوحة التحكم" : "ابدأ الفحص الآن"}
+            {user ? "الانتقال للوحة التحكم" : "تسجيل الدخول"}
           </button>
           
           <button 

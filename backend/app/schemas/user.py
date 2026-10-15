@@ -8,7 +8,7 @@ class UserOut(BaseModel):
     name: str
     email: str
     role: str
-    created_at: datetime.datetime
+    created_at: datetime.datetime | None = Field(default=None, alias="createdAt")  
     model_config = ConfigDict(from_attributes=True)
 
 class UserUpdate(BaseModel):
