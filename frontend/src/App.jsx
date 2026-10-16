@@ -9,12 +9,14 @@ import Overview from "./pages/Overview";
 import NewScan from "./pages/NewScan";
 import ScanList from "./pages/ScanList";
 import ScanDetail from "./pages/ScanDetail";
-
+import AdminApp from "./admin/AdminApp";
 export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
         <Routes>
+      
+          <Route path="/admin/*" element={<AdminApp />} />
           <Route path="/" element={<Welcome />} />
           <Route path="/login" element={<Auth initialMode="signin" />} />
           <Route path="/register" element={<Auth initialMode="signup" />} />
