@@ -61,8 +61,11 @@ def _result(flags):
 
 def _check_url(content):
     has_scheme = "://" in content
-    parsed = urlparse(content if has_scheme else "http://" + content)
-    host = (parsed.hostname or "").lower()
+    try:
+        parsed = urlparse(content if has_scheme else "http://" + content)
+        host = (parsed.hostname or "").lower()
+    except ValueError:  # malformed link, e.g. an unmatched "[" or "]"
+        return _result([(0.3, "رابط غير صالح", "الرابط مكتوب بصيغة غير صحيحة، وهذا شائع في الروابط المموّهة.")])
     lowered = content.lower()
     flags = []  # (points, title, detail)
 

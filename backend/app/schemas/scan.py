@@ -4,5 +4,5 @@ from pydantic import BaseModel
 
 
 class ScanIn(BaseModel):
-    kind: Literal["url", "message"]
+    kind: Literal["url", "message", "email"]
     content: str

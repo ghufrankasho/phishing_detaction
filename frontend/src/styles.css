@@ -274,7 +274,7 @@ textarea:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3p
   .topbar { flex-wrap: wrap; }
 }
 :root {
-  --header-bg: #1b4518;
+  --header-bg: #375635;
   --header-text: #ffffff;
   --header-muted: #cfe6cb;
   --header-line: #437a3f;

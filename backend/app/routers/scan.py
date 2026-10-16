@@ -1,17 +1,16 @@
-from sqlalchemy.orm import Session
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
 
-from app.dependencies import current_user
-from app.dependencies import require_admin
-from app.models import User
-from app.scanner import analyze
-from app.schemas.scan import ScanIn
 from app.database import get_db
-from app.models import Feedback, Scan
+from app.dependencies import current_user
+from app.models import Feedback, Scan, User
+from app.scanner import analyze
 from app.schemas.feedback import FeedbackCreate
+from app.schemas.scan import ScanIn
 from app.utils import mask_sensitive
 
-router = APIRouter(tags=["admin: scan"], dependencies=[Depends(require_admin)])
+# No require_admin here: scanning and reporting are for every logged-in user.
+router = APIRouter(tags=["scan"])
 
 
 @router.post("/scan")
@@ -22,14 +21,15 @@ def scan(data: ScanIn, user: User = Depends(current_user), db: Session = Depends
     if len(content) > 5000:
         raise HTTPException(status_code=400, detail="المحتوى طويل جداً (الحد الأقصى 5000 حرف)")
 
-    result = analyze(data.kind, content)
+    result = analyze(data.kind, content)  # analyze the real text...
 
+    raw_score = result.get("score")  # analyzer gives 0-1; the column is an int 0-100
     record = Scan(
         user_id=user.id,
         kind=data.kind,
-        content=mask_sensitive(content),
-        score=result.get("score"),
-        label=result.get("label"),
+        content=mask_sensitive(content),  # ...but only store the masked text
+        score=None if raw_score is None else round(raw_score * 100),
+        label=result.get("verdict"),      # safe | suspicious | phishing
     )
     db.add(record)
     db.commit()

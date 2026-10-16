@@ -1,5 +1,14 @@
-import { Link, Outlet, useNavigate } from "react-router-dom";
+import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+
+// Add a line here to add a sidebar item. Icons are boxicons class names.
+const NAV = [
+  { to: "/dashboard", icon: "bxs-dashboard", label: "الرئيسية", end: true },
+  { to: "/scan", icon: "bx-search-alt", label: "فحص جديد" },
+  { to: "/emails", icon: "bxs-envelope", label: "رسائل البريد" },
+  { to: "/messages", icon: "bxs-message-dots", label: "الرسائل" },
+  { to: "/domains", icon: "bx-globe", label: "النطاقات والروابط" },
+];
 
 export default function Layout() {
   const { user, logout } = useAuth();
@@ -12,7 +21,6 @@ export default function Layout() {
 
   return (
     <div className="app">
-      {/* Outer element = full-width colored band, inner .topbar = centered content */}
       <header className="site-header">
         <div className="topbar">
           <Link to="/dashboard" className="brand">
@@ -39,8 +47,21 @@ export default function Layout() {
         </div>
       </header>
 
-      <div className="page">
-        <Outlet />
+      <div className="shell">
+        <aside className="sidebar">
+          <nav>
+            {NAV.map((item) => (
+              <NavLink key={item.to} to={item.to} end={item.end} className="side-link">
+                <i className={`bx ${item.icon}`}></i>
+                <span>{item.label}</span>
+              </NavLink>
+            ))}
+          </nav>
+        </aside>
+
+        <div className="page">
+          <Outlet />
+        </div>
       </div>
 
       <footer className="site-footer">

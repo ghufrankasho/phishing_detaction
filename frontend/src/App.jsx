@@ -2,26 +2,33 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
-import Auth from "./pages/Auth";
 import Layout from "./components/Layout";
-import Dashboard from "./pages/Dashboard";
-import Welcome from "./pages/welcome";
-import AdminApp from "./admin/AdminApp";
+import Auth from "./pages/Auth";
+import Welcome from "./pages/Welcome";
+import Overview from "./pages/Overview";
+import NewScan from "./pages/NewScan";
+import ScanList from "./pages/ScanList";
+import ScanDetail from "./pages/ScanDetail";
 
 export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
         <Routes>
-           {/* your existing routes: home, login, register, ... */}
-          <Route path="/admin/*" element={<AdminApp />} />
           <Route path="/" element={<Welcome />} />
           <Route path="/login" element={<Auth initialMode="signin" />} />
-          <Route path="/register" element={<Auth initialMode="signup" />} />  
+          <Route path="/register" element={<Auth initialMode="signup" />} />
+
           <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
-          <Route path="/dashboard" element={<Dashboard />} />
-          {/* later: <Route path="/history" element={<History />} /> */}
-         </Route>
+            <Route path="/dashboard" element={<Overview />} />
+            <Route path="/scan" element={<NewScan />} />
+            <Route path="/emails" element={<ScanList key="email" kind="email" title="رسائل البريد" />} />
+            <Route path="/messages" element={<ScanList key="message" kind="message" title="الرسائل" />} />
+            <Route path="/domains" element={<ScanList key="url" kind="url" title="النطاقات والروابط" />} />
+            <Route path="/scans/:id" element={<ScanDetail />} />
+          </Route>
+
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>

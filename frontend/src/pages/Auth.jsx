@@ -48,7 +48,7 @@ export default function Auth({ initialMode = "signin" }) {
     try {
 
       await login(signInForm.email, signInForm.password);
-      console.log("Login successful");
+      
       navigate("/dashboard");
     } catch (err) {
       setSignInError(getErrorMessage(err, "فشل تسجيل الدخول"));
