@@ -18,6 +18,9 @@ export default function Layout() {
     logout();
     navigate("/login");
   };
+  const handleProfile=()=>{
+    navigate("/profile");
+  }
 
   return (
     <div className="app">
@@ -34,12 +37,12 @@ export default function Layout() {
             </div>
             <div>
               <h1>كشف التصيّد الاحتيالي</h1>
-              <p>افحص الروابط والرسائل قبل أن تثق بها</p>
+             
             </div>
           </Link>
 
           <div className="topbar-actions">
-            <span className="status">مرحباً، {user.name}</span>
+            <button type="button" className="link-btn" onClick={handleProfile}>مرحباً <span>{user.name}</span></button>
             <button type="button" className="link-btn" onClick={handleLogout}>
               تسجيل الخروج
             </button>

@@ -10,6 +10,8 @@ import NewScan from "./pages/NewScan";
 import ScanList from "./pages/ScanList";
 import ScanDetail from "./pages/ScanDetail";
 import AdminApp from "./admin/AdminApp";
+import Profile from "./pages/Profile";
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -28,8 +30,9 @@ export default function App() {
             <Route path="/messages" element={<ScanList key="message" kind="message" title="الرسائل" />} />
             <Route path="/domains" element={<ScanList key="url" kind="url" title="النطاقات والروابط" />} />
             <Route path="/scans/:id" element={<ScanDetail />} />
+           
           </Route>
-
+          <Route path="/profile" element={<Profile />} />        
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AuthProvider>
