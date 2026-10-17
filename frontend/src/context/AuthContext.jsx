@@ -36,9 +36,17 @@ export function AuthProvider({ children }) {
     localStorage.removeItem("token");
     setUser(null);
   };
-
+ const editUserName =async (newName) => {
+  const token = localStorage.getItem("token");
+  
+    const res = (await api.put("/user", { name: newName })).
+    headers.Authorization = `Bearer ${token}`
+    setUser(res.data.user);
+    console.log(user);
+  };
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, editUserName }}>
+
       {children}
     </AuthContext.Provider>
   );
