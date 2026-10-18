@@ -100,3 +100,25 @@ table.data tbody tr:hover { background: var(--side-hover); }
   .sidebar nav { flex-direction: row; overflow-x: auto; position: static; }
   .side-link { white-space: nowrap; }
 }
+
+/* ---------- Profile page ---------- */
+.profile-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; align-items: start; }
+.field { margin-bottom: 16px; }
+.field label { margin-bottom: 6px; }
+.field .helper { margin: 6px 0 0; }
+.panel input[type="text"],
+.panel input[type="email"],
+.panel input[type="password"] {
+  width: 100%;
+  background: var(--surface-soft);
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font: inherit;
+  outline: none;
+}
+.panel input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.panel input:disabled { background: var(--bg); color: var(--muted); cursor: not-allowed; }
+.panel .success { color: var(--safe); background: var(--safe-soft); border: 1px solid var(--safe-line); padding: 11px; border-radius: 10px; margin: 14px 0 0; }
+@media (max-width: 850px) { .profile-grid { grid-template-columns: 1fr; } }
