@@ -7,7 +7,7 @@ from app.routers import dashboard
 from app.config import settings
 from app.database import Base, engine
 from app.routers import auth, scan, users
- 
+from app.routers import profile
 
 app = FastAPI()
 
@@ -27,3 +27,5 @@ app.include_router(auth.router)
 app.include_router(scan.router)
 app.include_router(users.router)
 app.include_router(dashboard.router)
+
+app.include_router(profile.router)

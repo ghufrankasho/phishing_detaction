@@ -30,10 +30,11 @@ export default function App() {
             <Route path="/messages" element={<ScanList key="message" kind="message" title="الرسائل" />} />
             <Route path="/domains" element={<ScanList key="url" kind="url" title="النطاقات والروابط" />} />
             <Route path="/scans/:id" element={<ScanDetail />} />
-           
+            <Route path="/profile" element={<Profile />} />
           </Route>
-          <Route path="/profile" element={<Profile />} />        
-          <Route path="*" element={<Navigate to="/" replace />} />
+       
+        
+       
         </Routes>
       </AuthProvider>
     </BrowserRouter>

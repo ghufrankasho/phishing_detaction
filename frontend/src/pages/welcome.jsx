@@ -25,11 +25,9 @@ export default function Welcome() {
         </svg>
         
         <h2>
-          احمِ نفسك من الروابط والرسائل الاحتيالية
+         Phishing Guard AI
         </h2>
-        <p className="lead">
-          منصة ذكية متطورة لفحص وتحليل المحتوى المشبوه فوراً والتحقق من سلامته لحماية بياناتك الشخصية والمالية.
-        </p>
+        
 
         {/* Action Buttons Container */}
         <div className="welcome-actions">

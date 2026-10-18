@@ -1,153 +1,128 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import api from "../api/axios";
+import { getErrorMessage } from "../api/getErrorMessage";
 import { useAuth } from "../context/AuthContext";
 
+const EMPTY_PW = { current_password: "", new_password: "", new_password_confirmation: "" };
+
 export default function Profile() {
-    const { user } = useAuth();
+  const { user, setUser } = useAuth();
 
-    // State for switching tabs
-    const [activeTab, setActiveTab] = useState("account-general");
+  // ----- name form -----
+  const [name, setName] = useState(user.name);
+  const [nameMsg, setNameMsg] = useState({ type: "", text: "" });
+  const [savingName, setSavingName] = useState(false);
 
-    // State for profile image preview
-    const [profilePic, setProfilePic] = useState("https://bootdey.com/img/Content/avatar/avatar1.png");
+  // ----- password form -----
+  const [pw, setPw] = useState(EMPTY_PW);
+  const [pwMsg, setPwMsg] = useState({ type: "", text: "" });
+  const [savingPw, setSavingPw] = useState(false);
 
-    // State for user name input
-    const [name, setName] = useState(user?.name || "rama alzain");
+  const saveName = async (e) => {
+    e.preventDefault();
+    setNameMsg({ type: "", text: "" });
+    setSavingName(true);
+    try {
+      const res = await api.patch("/profile", { name });
+      setUser((prev) => ({ ...prev, ...res.data })); // updates the header too
+      setName(res.data.name);
+      setNameMsg({ type: "success", text: "تم حفظ الاسم." });
+    } catch (err) {
+      setNameMsg({ type: "error", text: getErrorMessage(err, "تعذّر حفظ الاسم") });
+    } finally {
+      setSavingName(false);
+    }
+  };
 
-    // State for password reset form
-    const [passwords, setPasswords] = useState({
-        old_password: "",
-        new_password: "",
-        confirmed_password: ""
-    });
+  const handlePwChange = (e) => setPw({ ...pw, [e.target.name]: e.target.value });
 
-    const handlePasswordChange = (e) => {
-        setPasswords({ ...passwords, [e.target.id]: e.target.value });
-    };
+  const changePassword = async (e) => {
+    e.preventDefault();
+    setPwMsg({ type: "", text: "" });
+    if (pw.new_password !== pw.new_password_confirmation) {
+      setPwMsg({ type: "error", text: "كلمتا المرور الجديدتان غير متطابقتين" });
+      return;
+    }
+    setSavingPw(true);
+    try {
+      await api.post("/profile/password", pw);
+      setPw(EMPTY_PW);
+      setPwMsg({ type: "success", text: "تم تغيير كلمة المرور." });
+    } catch (err) {
+      setPwMsg({ type: "error", text: getErrorMessage(err, "تعذّر تغيير كلمة المرور") });
+    } finally {
+      setSavingPw(false);
+    }
+  };
 
-    const handleNameChange = (e) => {
-        setName(e.target.value);
-    };
+  return (
+    <div className="container">
+      <div className="page-head">
+        <h2 className="page-title">الملف الشخصي</h2>
+       
+      </div>
 
-    const updateName = (e) => {
-        e.preventDefault();
-        // Add your API call to update the user's name here
-        console.log("Name update submitted:", name);
-    };
+      <div className="profile-grid">
+        <form className="panel" onSubmit={saveName}>
+          <h3>معلومات الحساب</h3>
 
-    const resetPassword = (e) => {
-        e.preventDefault();
-        // Add your API call to reset password here
-        console.log("Password reset submitted", passwords);
-    };
+          <div className="field">
+            <label htmlFor="name">الاسم</label>
+            <input
+              id="name"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              maxLength={100}
+              required
+            />
+          </div>
 
-    return (
-        <div className="prof" dir="rtl">
-            <div className="container light-style flex-grow-1 container-p-y">
-                <h4 className="font-weight-bold py-3 mb-4 text-right">
-                    إعدادات الحساب
-                </h4>
-                <div className="card overflow-hidden">
-                    <div className="row no-gutters row-bordered row-border-light">
+          <div className="field">
+            <label htmlFor="email">البريد الإلكتروني</label>
+            <input id="email" type="email" value={user.email || ""} disabled />
+          </div>
 
-                        {/* Main Content Area */}
-                        <div className="col-md-9">
-                            <div className="tab-content">
-                                
-                                {/* General Settings Tab (Profile / Name Change) */}
-                                <div className={`tab-pane fade ${activeTab === "account-general" ? "active show" : ""}`} id="account-general">
-                                    <div className="card-body media align-items-center text-right">
-                                        <img src={profilePic} alt="Profile" className="d-block ui-w-80" id="profile-pic" />
+          <button className="primary" type="submit"
+                  disabled={savingName || name.trim() === user.name}>
+            {savingName ? "جارٍ الحفظ..." : "حفظ التغييرات"}
+          </button>
 
-                                        <div className="media-body ml-4 w-100">
-                                            <div className="form-group">
-                                                <label className="form-label">اسم المستخدم</label>
-                                                <input 
-                                                    type="text" 
-                                                    className="form-control" 
-                                                    id="input-name" 
-                                                    value={name}
-                                                    onChange={handleNameChange}
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="text-left m-3">
-                                        <button type="button" onClick={updateName} className="btn btn-info">حفظ</button>
-                                    </div>
-                                </div>
+          {nameMsg.text && <p className={nameMsg.type}>{nameMsg.text}</p>}
+        </form>
 
-                                {/* Reset Password Tab */}
-                                <div className={`tab-pane fade text-right ${activeTab === "reset-password" ? "active show" : ""}`} id="reset-password">
-                                    <div className="card-body pb-2">
-                                        <div className="form-group" id="reset_password">
-                                            <label className="form-label">كلمة المرور الحالية</label>
-                                            <input 
-                                                type="password" 
-                                                className="form-control" 
-                                                id="old_password" 
-                                                value={passwords.old_password}
-                                                onChange={handlePasswordChange}
-                                            />
-                                        </div>
-                                        <div className="form-group">
-                                            <label className="form-label">كلمة المرور الجديدة</label>
-                                            <input 
-                                                type="password" 
-                                                className="form-control" 
-                                                id="new_password" 
-                                                value={passwords.new_password}
-                                                onChange={handlePasswordChange}
-                                            />
-                                        </div>
-                                        <div className="form-group">
-                                            <label className="form-label">أعد كتابة كلمة المرور</label>
-                                            <input 
-                                                type="password" 
-                                                className="form-control" 
-                                                id="confirmed_password" 
-                                                value={passwords.confirmed_password}
-                                                onChange={handlePasswordChange}
-                                            />
-                                        </div>
-                                        <div className="form-group">
-                                            <button type="button" className="btn btn-info" onClick={resetPassword}>
-                                                حفظ
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
+        <form className="panel" onSubmit={changePassword}>
+          <h3>تغيير كلمة المرور</h3>
 
-                            </div>
-                        </div>
+          <div className="field">
+            <label htmlFor="current_password">كلمة المرور الحالية</label>
+            <input id="current_password" name="current_password" type="password"
+                   autoComplete="current-password"
+                   value={pw.current_password} onChange={handlePwChange} required />
+          </div>
 
-                        {/* Sidebar Navigation */}
-                        <div className="col-md-3 pt-0">
-                            <div className="list-group list-group-flush account-settings-links">
-                                <button 
-                                    type="button"
-                                    style={{ textAlign: "right" }} 
-                                    className={`list-group-item list-group-item-action ${activeTab === "account-general" ? "active" : ""}`}
-                                    onClick={() => setActiveTab("account-general")}
-                                >
-                                    الصفحة الشخصية
-                                </button>
-                                <button 
-                                    type="button"
-                                    style={{ textAlign: "right" }} 
-                                    className={`list-group-item list-group-item-action ${activeTab === "reset-password" ? "active" : ""}`}
-                                    onClick={() => setActiveTab("reset-password")}
-                                >
-                                    تغيير كلمة السر
-                                </button>
-                                <a style={{ textAlign: "right" }} className="list-group-item list-group-item-action" href="/account/loginInside.html">
-                                    تسجيل خروج
-                                </a>
-                            </div>
-                        </div>
+          <div className="field">
+            <label htmlFor="new_password">كلمة المرور الجديدة</label>
+            <input id="new_password" name="new_password" type="password"
+                   autoComplete="new-password" minLength={8}
+                   value={pw.new_password} onChange={handlePwChange} required />
+            <p className="helper">8 أحرف على الأقل.</p>
+          </div>
 
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
+          <div className="field">
+            <label htmlFor="new_password_confirmation">تأكيد كلمة المرور الجديدة</label>
+            <input id="new_password_confirmation" name="new_password_confirmation"
+                   type="password" autoComplete="new-password"
+                   value={pw.new_password_confirmation} onChange={handlePwChange} required />
+          </div>
+
+          <button className="primary" type="submit" disabled={savingPw}>
+            {savingPw ? "جارٍ التغيير..." : "تغيير كلمة المرور"}
+          </button>
+
+          {pwMsg.text && <p className={pwMsg.type}>{pwMsg.text}</p>}
+        </form>
+      </div>
+    </div>
+  );
 }

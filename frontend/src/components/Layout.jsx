@@ -8,6 +8,7 @@ const NAV = [
   { to: "/emails", icon: "bxs-envelope", label: "رسائل البريد" },
   { to: "/messages", icon: "bxs-message-dots", label: "الرسائل" },
   { to: "/domains", icon: "bx-globe", label: "النطاقات والروابط" },
+  { to: "/profile", icon: "bxs-user", label: "الملف الشخصي" },
 ];
 
 export default function Layout() {
