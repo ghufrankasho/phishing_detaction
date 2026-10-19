@@ -1,4 +1,4 @@
-// src/pages/Welcome.jsx
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -16,13 +16,8 @@ export default function Welcome() {
   return (
     <div className="hero welcome-page-wrapper">
       <div className="splash-center">
-        {/* Shield and Checkmark App Logo */}
-        <svg className="splash-icon welcome-icon" viewBox="0 0 24 24" fill="none"
-             stroke="currentColor" strokeWidth="1.8"
-             strokeLinecap="round" strokeLinejoin="round">
-          <path d="M12 3l8 3v6c0 4.5-3.2 8.3-8 9-4.8-.7-8-4.5-8-9V6l8-3z" />
-          <path d="M9 12l2 2 4-4" />
-        </svg>
+       <img className="splash-icon" src="/logo.png" alt="" />
+         
         
         <h2>
          Phishing Guard AI
