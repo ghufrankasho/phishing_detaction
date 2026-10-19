@@ -1,4 +1,4 @@
-
+// src/pages/Welcome.jsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
@@ -14,6 +14,7 @@ export default function Welcome() {
   };
 
   return (
+     <div className="welcome-container">
     <div className="hero welcome-page-wrapper">
       <div className="splash-center">
        <img className="splash-icon" src="/logo.png" alt="" />
@@ -66,5 +67,7 @@ export default function Welcome() {
         </div>
       )}
     </div>
+    </div>
+    
   );
 }

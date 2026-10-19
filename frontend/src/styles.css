@@ -1,34 +1,72 @@
 @import url('https://googleapis.com');
 
-/* ---------- Palette: Updated to match your green and slate theme ---------- */
+/* theme.css: colors taken from the logo (navy, royal blue, teal, hook red).
+   Import this LAST in main.jsx so it overrides the earlier color values. */
+
 :root {
-  --bg: #f6f5f7;            /* Adjusted to the soft log background */
+  /* the logo's own colors */
+  --navy: #071e73;
+  --blue: #134f93;
+  --teal: #0b748d;
+  --teal-light: #54bec6;
+  --hook-red: #962b41;
+
+  /* surfaces and text */
+  --bg: #f2f6fb;
   --surface: #ffffff;
-  --surface-soft: #ffffff;
-  --border: rgba(0, 0, 0, 0.1);
-  --border-strong: #808080; /* Matched the input/button borders */
+  --surface-soft: #f8fafd;
+  --border: #dbe4f0;
+  --border-strong: #b4c2d6;
 
-  --text: #000000;          /* Deep dark slate text */
-  --text-soft: #333333;
-  --muted: #666666;
+  --text: #0b1736;
+  --text-soft: #34425f;
+  --muted: #5f6b85;
 
-  --accent: #51934d;        /* The rich green color from your log button */
-  --accent-hover: #437a3f;
-  --accent-soft: #b3e99c;   /* The light green gradient tone */
+  /* main accent = the shield's royal blue */
+  --accent: #134f93;
+  --accent-hover: #0d3c72;
+  --accent-soft: #dfeaf7;
   --on-accent: #ffffff;
 
-  --safe: #51934d;
-  --safe-soft: #eef7ed;
-  --safe-line: #b3e99c;
-  --warn: #a8690f;
+  /* verdict colors stay green / amber / red so they read instantly */
+  --safe: #17714a;
+  --safe-soft: #e6f4ec;
+  --safe-line: #bfe0cd;
+  --warn: #8d5700;
   --warn-soft: #fbf1dc;
-  --danger: #dc2626;        /* Matched to your .auth-error color */
-  --danger-soft: #fef2f2;
-  --danger-line: #fee2e2;
+  --danger: #a82a43;          /* the hook's red */
+  --danger-soft: #fbecef;
+  --danger-line: #f1c6ce;
 
-  --font: 'Cairo', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  /* header + footer band */
+  --header-bg: linear-gradient(90deg, #071e73 0%, #0b3f86 60%, #0b6a8f 100%);
+  --header-text: #ffffff;
+  --header-muted: #c5d6ee;
+  --header-line: rgba(255, 255, 255, 0.14);
+  --header-accent: #54bec6;
+  --header-pill-bg: rgba(255, 255, 255, 0.1);
+  --header-pill-text: #d9f3f7;
+  --header-btn-line: rgba(255, 255, 255, 0.4);
+  --header-hover: rgba(255, 255, 255, 0.12);
+
+  /* sidebar */
+  --side-hover: rgba(7, 30, 115, 0.05);
+  --side-active-bg: #e3edf8;
+  --side-active-text: #134f93;
 }
 
+/* second logo color for small highlights */
+.stat-top i { color: var(--teal); }
+
+/* header logo image sits on a white tile so the dark shield stays visible */
+.logo img { width: 100%; height: 100%; object-fit: contain; }
+.site-header .logo:has(img) { background: #fff; border: 0; padding: 3px; }
+
+/* login / register page (overrides the greens in Auth.css) */
+.log { background: var(--bg); }
+.log button { background-color: var(--accent); border-color: var(--accent); }
+.log .overlay { background-image: linear-gradient(to right, #0b748d, #071e73); }
+.log .auth-error { color: var(--danger); }
 *, *::before, *::after { box-sizing: border-box; }
 
 body {
@@ -123,7 +161,7 @@ textarea:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3p
 .splash:focus { outline: none; }
 .splash:focus-visible { outline: 2px solid var(--accent); outline-offset: -8px; }
 .splash-center { display: flex; flex-direction: column; align-items: center; gap: 16px; }
-.splash-icon { width: 120px; height: 120px; object-fit: contain; }
+.splash-icon { width: auto; height: 200px; object-fit: contain; }
 .splash-title { margin: 0; font-size: 1.8rem; color: var(--text); font-weight: bold; }
 .splash-tips { position: absolute; bottom: 40px; margin: 0; padding: 0; list-style: none; color: var(--muted); text-align: center; }
 
@@ -144,9 +182,10 @@ textarea:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3p
 .welcome-page-wrapper {
   padding: 60px 20px;
   display: flex;
-  justify-content: center;
+  justify-content: right;
   align-items: center;
-  min-height: 60vh;
+  min-height: 100vh;
+  margin-right: 200px;
 }
 
 .welcome-page-wrapper .splash-center {
@@ -171,6 +210,21 @@ textarea:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3p
   display: flex;
   gap: 16px;
   justify-content: center;
+}
+.welcome-container {
+  /* If the image is in src/assets: */
+  background-image: url('../public/image.png');
+  /* background-image: url('../public/background.jpg'); */
+  /* Or if it's in the public folder: */
+  /* background-image: url('/your-background.png'); */
+
+  background-size: cover;       /* Scales the image to cover the entire container */
+  background-position: center;  /* Centers the image */
+  background-repeat: no-repeat; /* Prevents the image from tiling */
+  
+  /* Ensure the container takes up the full screen height */
+  width: 100vw;
+  height: 100vh;
 }
 
 /* ---------- Custom Interactive Modal Popup ---------- */
@@ -273,17 +327,7 @@ textarea:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3p
 @media (max-width: 850px) {
   .topbar { flex-wrap: wrap; }
 }
-:root {
-  --header-bg: #375635;
-  --header-text: #ffffff;
-  --header-muted: #cfe6cb;
-  --header-line: #437a3f;
-  --header-accent: #b3e99c;
-  --header-pill-bg: rgba(255, 255, 255, .1);
-  --header-pill-text: #e3f3df;
-  --header-btn-line: rgba(255, 255, 255, .4);
-  --header-hover: rgba(255, 255, 255, .1);
-}
+
 
 /* Full-width bands; the page itself keeps its own padding */
 .app { padding: 0; }
