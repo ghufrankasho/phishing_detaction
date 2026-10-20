@@ -34,12 +34,7 @@ export default function NewScan() {
 
   return (
     <>
-      <section className="hero">
-        <h2>هل هذا آمن؟</h2>
-        <p className="lead">
-          الصق رابطاً أو رسالة أو بريداً، وسنخبرك بمستوى الخطر ولماذا.
-        </p>
-      </section>
+       
 
       <div className="workspace">
         <form className="panel" onSubmit={handleScan}>

@@ -1,6 +1,6 @@
 // src/context/AuthContext.jsx
 import { createContext, useContext, useState, useEffect } from "react";
-import api from "../api/axios";
+import api from "../axios";
 
 const AuthContext = createContext(null);
 
@@ -36,11 +36,11 @@ export function AuthProvider({ children }) {
     localStorage.removeItem("token");
     setUser(null);
   };
- const editUserName =async (newName) => {
-  const token = localStorage.getItem("token");
-  
+  const editUserName = async (newName) => {
+    const token = localStorage.getItem("token");
+
     const res = (await api.put("/user", { name: newName })).
-    headers.Authorization = `Bearer ${token}`
+      headers.Authorization = `Bearer ${token}`
     setUser(res.data.user);
     console.log(user);
   };
