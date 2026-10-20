@@ -1,6 +1,6 @@
 // src/App.jsx
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "./context/AuthContext";
+import { AuthProvider } from "./api/context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Layout from "./components/Layout";
 import Auth from "./pages/Auth";
@@ -17,7 +17,7 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <Routes>
-      
+
           <Route path="/admin/*" element={<AdminApp />} />
           <Route path="/" element={<Welcome />} />
           <Route path="/login" element={<Auth initialMode="signin" />} />
@@ -32,9 +32,9 @@ export default function App() {
             <Route path="/scans/:id" element={<ScanDetail />} />
             <Route path="/profile" element={<Profile />} />
           </Route>
-       
-        
-       
+
+
+
         </Routes>
       </AuthProvider>
     </BrowserRouter>

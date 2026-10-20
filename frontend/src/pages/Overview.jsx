@@ -27,10 +27,7 @@ export default function Overview() {
 
   return (
     <div className="container">
-      <div className="page-head">
-        <h2 className="page-title">لوحة التحكم</h2>
-        <p className="lead">إجمالي الفحوصات: {data.total}</p>
-      </div>
+       
 
       <div className="stat-grid">
         {CARDS.map((card) => {

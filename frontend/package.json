@@ -17,6 +17,7 @@
     "react-admin": "^5.15.4",
     "react-dom": "latest",
     "react-router-dom": "^7.18.4",
+    "swiper": "^14.3.0",
     "typescript": "latest",
     "vite": "latest"
   }

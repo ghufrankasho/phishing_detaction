@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../api/context/AuthContext";
 import { getErrorMessage } from "../api/getErrorMessage";
-import "../pages/css/Auth.css";
+ 
 export default function Auth({ initialMode = "signin" }) {
   const { login, register } = useAuth();
   const navigate = useNavigate();
@@ -22,7 +22,7 @@ export default function Auth({ initialMode = "signin" }) {
   const [signInError, setSignInError] = useState("");
 
   const handleSignUpChange = (e) =>
-    setSignUpForm({ ...signUpForm, [e.target.name]: e.target.value,[e.target.role]:"user" });
+    setSignUpForm({ ...signUpForm, [e.target.name]: e.target.value, [e.target.role]: "user" });
 
   const handleSignInChange = (e) =>
     setSignInForm({ ...signInForm, [e.target.name]: e.target.value });
@@ -48,7 +48,7 @@ export default function Auth({ initialMode = "signin" }) {
     try {
 
       await login(signInForm.email, signInForm.password);
-      
+
       navigate("/dashboard");
     } catch (err) {
       setSignInError(getErrorMessage(err, "فشل تسجيل الدخول"));
@@ -66,15 +66,15 @@ export default function Auth({ initialMode = "signin" }) {
             <h1>أنشئ حساباً</h1>
             {signUpError && <p className="auth-error">{signUpError}</p>}
             <input dir="rtl" type="text" name="name" placeholder="الاسم"
-                   value={signUpForm.name} onChange={handleSignUpChange} required />
+              value={signUpForm.name} onChange={handleSignUpChange} required />
             <input dir="rtl" type="email" name="email" placeholder="البريد الالكتروني"
-                   value={signUpForm.email} onChange={handleSignUpChange} required />
+              value={signUpForm.email} onChange={handleSignUpChange} required />
             <input dir="rtl" type="password" name="password" placeholder="كلمة المرور"
-                   value={signUpForm.password} onChange={handleSignUpChange} required />
+              value={signUpForm.password} onChange={handleSignUpChange} required />
             <input dir="rtl" type="password" name="password_confirmation"
-                   placeholder="تأكيد كلمة المرور"
-                   value={signUpForm.password_confirmation}
-                   onChange={handleSignUpChange} required />
+              placeholder="تأكيد كلمة المرور"
+              value={signUpForm.password_confirmation}
+              onChange={handleSignUpChange} required />
             <button type="submit" disabled={submitting}>
               {submitting ? "..." : "إنشاء حساب"}
             </button>
@@ -87,9 +87,9 @@ export default function Auth({ initialMode = "signin" }) {
             <h1>تسجيل الدخول</h1>
             {signInError && <p className="auth-error">{signInError}</p>}
             <input dir="rtl" type="email" name="email" placeholder="البريد الالكتروني"
-                   value={signInForm.email} onChange={handleSignInChange} required />
+              value={signInForm.email} onChange={handleSignInChange} required />
             <input dir="rtl" type="password" name="password" placeholder="كلمة المرور"
-                   value={signInForm.password} onChange={handleSignInChange} required />
+              value={signInForm.password} onChange={handleSignInChange} required />
             <button type="submit" disabled={submitting}>
               {submitting ? "..." : "دخول"}
             </button>
@@ -108,7 +108,7 @@ export default function Auth({ initialMode = "signin" }) {
             </div>
             <div className="overlay-panel overlay-right">
               <h1>مرحباً بك</h1>
-              
+
               <button type="button" className="ghost" onClick={() => setIsSignUp(true)}>
                 إنشاء حساب
               </button>

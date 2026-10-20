@@ -1,11 +1,13 @@
-from sqlalchemy import String
+from sqlalchemy import String, Date
 from sqlalchemy.orm import Mapped, mapped_column
-from datetime import datetime
+from datetime import datetime ,date
 from sqlalchemy import Boolean, DateTime, String, func
 from sqlalchemy.orm import Mapped, mapped_column
 from app.database import Base
 from sqlalchemy import DateTime, ForeignKey, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+ 
+ 
 
 
 
@@ -21,7 +23,9 @@ class User(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     scans: Mapped[list["Scan"]] = relationship(back_populates="user", cascade="all, delete-orphan")
     feedback_items: Mapped[list["Feedback"]] = relationship(back_populates="user", cascade="all, delete-orphan")
-    
+    profile: Mapped["EmployeeProfile"] = relationship(
+    back_populates="user", cascade="all, delete-orphan", uselist=False
+)
 class DomainList(Base):
     __tablename__ = "domain_lists"
 
@@ -56,6 +60,7 @@ class Scan(Base):
     feedback_items: Mapped[list["Feedback"]] = relationship(back_populates="scan", cascade="all, delete-orphan")
 
 class Feedback(Base):
+
     __tablename__ = "feedback"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -70,3 +75,21 @@ class Feedback(Base):
 
     scan: Mapped["Scan"] = relationship(back_populates="feedback_items")
     user: Mapped["User"] = relationship(back_populates="feedback_items")
+    
+class EmployeeProfile(Base):
+    __tablename__ = "employee_profiles"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), unique=True, index=True)
+    department: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    position: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    employee_number: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    hire_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+    phone: Mapped[str | None] = mapped_column(String(30), nullable=True)
+    extension: Mapped[str | None] = mapped_column(String(20), nullable=True)
+    notes: Mapped[str | None] = mapped_column(String(1000), nullable=True)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+    user: Mapped["User"] = relationship(back_populates="profile")
