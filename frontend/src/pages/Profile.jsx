@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../api/axios";
 import { getErrorMessage } from "../api/getErrorMessage";
-import { useAuth } from "../api/context/AuthContext";
+import { useAuth } from "../context/AuthContext";
 
 const EMPTY_PW = { current_password: "", new_password: "", new_password_confirmation: "" };
 const EMPTY_EMP = {
@@ -107,22 +107,22 @@ export default function Profile() {
     <div className="container">
       <div className="page-head">
         <h2 className="page-title">الملف الشخصي</h2>
-      
+
       </div>
 
       <div className="profile-grid">
-        
+
         {/* ---------------- employee details ---------------- */}
         <form className="panel profile-wide" onSubmit={saveEmployee}>
           <h3>بيانات الموظف</h3>
-          
+
 
           <div className="field-grid">
             <div className="field">
               <label htmlFor="department"><i className="bx bxs-buildings"></i>القسم</label>
               <input id="department" name="department" type="text" list="departments"
-                     value={emp.department} onChange={handleEmpChange}
-                     maxLength={100} disabled={!empLoaded} />
+                value={emp.department} onChange={handleEmpChange}
+                maxLength={100} disabled={!empLoaded} />
               <datalist id="departments">
                 {DEPARTMENTS.map((d) => <option key={d} value={d} />)}
               </datalist>
@@ -131,42 +131,42 @@ export default function Profile() {
             <div className="field">
               <label htmlFor="position"><i className="bx bxs-briefcase-alt-2"></i>المنصب</label>
               <input id="position" name="position" type="text"
-                     value={emp.position} onChange={handleEmpChange}
-                     maxLength={100} disabled={!empLoaded} />
+                value={emp.position} onChange={handleEmpChange}
+                maxLength={100} disabled={!empLoaded} />
             </div>
 
             <div className="field">
               <label htmlFor="employee_number"><i className="bx bxs-id-card"></i>رقم الموظف</label>
               <input id="employee_number" name="employee_number" type="text" className="ltr"
-                     value={emp.employee_number} onChange={handleEmpChange}
-                     maxLength={50} placeholder="EMP001" disabled={!empLoaded} />
+                value={emp.employee_number} onChange={handleEmpChange}
+                maxLength={50} placeholder="EMP001" disabled={!empLoaded} />
             </div>
 
             <div className="field">
               <label htmlFor="hire_date"><i className="bx bxs-calendar"></i>تاريخ التعيين</label>
               <input id="hire_date" name="hire_date" type="date"
-                     value={emp.hire_date} onChange={handleEmpChange}
-                     max={new Date().toISOString().slice(0, 10)} disabled={!empLoaded} />
+                value={emp.hire_date} onChange={handleEmpChange}
+                max={new Date().toISOString().slice(0, 10)} disabled={!empLoaded} />
             </div>
 
             <div className="field">
               <label htmlFor="phone"><i className="bx bxs-phone"></i>رقم الهاتف</label>
               <input id="phone" name="phone" type="tel" className="ltr"
-                     value={emp.phone} onChange={handleEmpChange}
-                     maxLength={30} placeholder="+963 ..." disabled={!empLoaded} />
+                value={emp.phone} onChange={handleEmpChange}
+                maxLength={30} placeholder="+963 ..." disabled={!empLoaded} />
             </div>
 
             <div className="field">
               <label htmlFor="extension"><i className="bx bxs-phone-call"></i>التحويلة</label>
               <input id="extension" name="extension" type="text" className="ltr"
-                     inputMode="numeric" value={emp.extension} onChange={handleEmpChange}
-                     maxLength={10} disabled={!empLoaded} />
+                inputMode="numeric" value={emp.extension} onChange={handleEmpChange}
+                maxLength={10} disabled={!empLoaded} />
             </div>
 
             <div className="field field-wide">
               <label htmlFor="notes"><i className="bx bxs-note"></i>ملاحظات</label>
               <textarea id="notes" name="notes" value={emp.notes}
-                        onChange={handleEmpChange} maxLength={1000} disabled={!empLoaded} />
+                onChange={handleEmpChange} maxLength={1000} disabled={!empLoaded} />
             </div>
           </div>
 
@@ -176,30 +176,30 @@ export default function Profile() {
 
           {empMsg.text && <p className={empMsg.type}>{empMsg.text}</p>}
         </form>
-         {/* ---------------- password ---------------- */}
+        {/* ---------------- password ---------------- */}
         <form className="panel" onSubmit={changePassword}>
           <h3>تغيير كلمة المرور</h3>
 
           <div className="field">
             <label htmlFor="current_password">كلمة المرور الحالية</label>
             <input id="current_password" name="current_password" type="password"
-                   autoComplete="current-password" required
-                   value={pw.current_password} onChange={handlePwChange} />
+              autoComplete="current-password" required
+              value={pw.current_password} onChange={handlePwChange} />
           </div>
 
           <div className="field">
             <label htmlFor="new_password">كلمة المرور الجديدة</label>
             <input id="new_password" name="new_password" type="password"
-                   autoComplete="new-password" minLength={8} required
-                   value={pw.new_password} onChange={handlePwChange} />
+              autoComplete="new-password" minLength={8} required
+              value={pw.new_password} onChange={handlePwChange} />
             <p className="helper">8 أحرف على الأقل.</p>
           </div>
 
           <div className="field">
             <label htmlFor="new_password_confirmation">تأكيد كلمة المرور الجديدة</label>
             <input id="new_password_confirmation" name="new_password_confirmation"
-                   type="password" autoComplete="new-password" required
-                   value={pw.new_password_confirmation} onChange={handlePwChange} />
+              type="password" autoComplete="new-password" required
+              value={pw.new_password_confirmation} onChange={handlePwChange} />
           </div>
 
           <button className="primary" type="submit" disabled={savingPw}>
@@ -215,7 +215,7 @@ export default function Profile() {
           <div className="field">
             <label htmlFor="name"><i className="bx bxs-user"></i>الاسم</label>
             <input id="name" type="text" value={name} maxLength={100} required
-                   onChange={(e) => setName(e.target.value)} />
+              onChange={(e) => setName(e.target.value)} />
           </div>
 
           <div className="field">
@@ -224,14 +224,14 @@ export default function Profile() {
           </div>
 
           <button className="primary" type="submit"
-                  disabled={savingName || name.trim() === user.name}>
+            disabled={savingName || name.trim() === user.name}>
             {savingName ? "جارٍ الحفظ..." : "حفظ التغييرات"}
           </button>
 
           {nameMsg.text && <p className={nameMsg.type}>{nameMsg.text}</p>}
         </form>
 
-       
+
 
       </div>
     </div>

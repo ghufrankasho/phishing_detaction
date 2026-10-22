@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.dependencies import require_admin
-from app.models import User
+from app.models import Permission, User
 from app.schemas.user import UserOut, UserUpdate
 
 router = APIRouter(tags=["admin: users"], dependencies=[Depends(require_admin)])
@@ -82,7 +82,26 @@ def update_user(
     if user.id == admin.id and body.role == "user":
         raise HTTPException(status_code=400, detail="You can't remove your own admin role")
 
-    for key, value in body.model_dump(exclude_unset=True).items():
+    updates = body.model_dump(exclude_unset=True)
+    if "permissions" in updates:
+        permission_names = updates.pop("permissions")
+        if permission_names is None:
+            permission_names = []
+        permissions = (
+            db.query(Permission)
+            .filter(Permission.name.in_(permission_names))
+            .all()
+            if permission_names
+            else []
+        )
+        if len(permissions) != len(permission_names):
+            raise HTTPException(
+                status_code=503,
+                detail="Permission records are not initialized; run the permission seed script",
+            )
+        user.permissions = permissions
+
+    for key, value in updates.items():
         setattr(user, key, value)
     db.commit()
     db.refresh(user)

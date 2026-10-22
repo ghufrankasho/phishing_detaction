@@ -1,6 +1,6 @@
 // src/App.jsx
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "./api/context/AuthContext";
+import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Layout from "./components/Layout";
 import Auth from "./pages/Auth";
@@ -8,9 +8,14 @@ import Welcome from "./pages/Welcome";
 import Overview from "./pages/Overview";
 import NewScan from "./pages/NewScan";
 import ScanList from "./pages/ScanList";
-import ScanDetail from "./pages/ScanDetail";
-import AdminApp from "./admin/AdminApp";
+import ScanDetail from "./pages/ScanDetail"; 
 import Profile from "./pages/Profile";
+         // the new src/auth.js file
+
+function RequireRole({ role, children }) {
+  if (!getToken(role)) return <Navigate to="/login" replace />;
+  return children;
+}
 
 export default function App() {
   return (
@@ -18,10 +23,9 @@ export default function App() {
       <AuthProvider>
         <Routes>
 
-          <Route path="/admin/*" element={<AdminApp />} />
+          
           <Route path="/" element={<Welcome />} />
           <Route path="/login" element={<Auth initialMode="signin" />} />
-          <Route path="/register" element={<Auth initialMode="signup" />} />
 
           <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
             <Route path="/dashboard" element={<Overview />} />
@@ -32,8 +36,6 @@ export default function App() {
             <Route path="/scans/:id" element={<ScanDetail />} />
             <Route path="/profile" element={<Profile />} />
           </Route>
-
-
 
         </Routes>
       </AuthProvider>

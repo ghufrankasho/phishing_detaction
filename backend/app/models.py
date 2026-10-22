@@ -6,11 +6,21 @@ from sqlalchemy.orm import Mapped, mapped_column
 from app.database import Base
 from sqlalchemy import DateTime, ForeignKey, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import Column, ForeignKey, String, Table
  
  
 
 
-
+user_permissions = Table(
+    "user_permissions",
+    Base.metadata,
+    Column("user_id", ForeignKey("users.id", ondelete="CASCADE"), primary_key=True),
+    Column(
+        "permission_id",
+        ForeignKey("permissions.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+)
 
 class User(Base):
     __tablename__ = "users"
@@ -20,6 +30,7 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
     password_hash: Mapped[str] = mapped_column(String(255))
     role: Mapped[str] = mapped_column(String(20), default="user", server_default="user")
+    permissions: Mapped[list["Permission"]] = relationship(secondary=user_permissions,back_populates="users",)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     scans: Mapped[list["Scan"]] = relationship(back_populates="user", cascade="all, delete-orphan")
     feedback_items: Mapped[list["Feedback"]] = relationship(back_populates="user", cascade="all, delete-orphan")
@@ -93,3 +104,12 @@ class EmployeeProfile(Base):
     )
 
     user: Mapped["User"] = relationship(back_populates="profile")
+    
+class Permission(Base):
+    __tablename__ = "permissions"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(100), unique=True, index=True)
+
+    users: Mapped[list["User"]] = relationship(secondary=user_permissions, back_populates="permissions",
+    )

@@ -1,7 +1,7 @@
 // src/pages/Welcome.jsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../api/context/AuthContext";
+import { useAuth } from "../context/AuthContext";
 
 export default function Welcome() {
   const navigate = useNavigate();
