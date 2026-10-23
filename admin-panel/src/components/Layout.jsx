@@ -6,7 +6,8 @@ export default function Layout() {
   const user = getUser();
   const links = [
     ["/users", "Users & Permissions"],
-    ["/scans", "Messages & Emails"],
+    ["/messages", "Messages"],
+    ["/emails", "Emails"],
     ["/domains", "Domains"],
   ];
 

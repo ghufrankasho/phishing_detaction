@@ -1,12 +1,14 @@
 import { useEffect, useState, useCallback } from "react";
 import { list, create, update, remove } from "../api";
 import Pagination from "../components/Pagination";
+import ConfirmDialog from "../components/ConfirmDialog";
 
 export default function Domains() {
   const [rows, setRows] = useState([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [type, setType] = useState("");
+  const [target, setTarget] = useState(null);
   const [form, setForm] = useState({
     domain: "",
     list_type: "blacklist",
@@ -72,24 +74,16 @@ export default function Domains() {
     }
   };
 
-  const toggle = async (d) => {
+ const toggle = async (d) => {
     try {
       await update("domain_lists", d.id, {
+        domain: d.domain, // Included domain to satisfy backend validation
         list_type: d.list_type === "whitelist" ? "blacklist" : "whitelist",
+        note:d.note
       });
       await load();
     } catch (err) {
       alert(err.message || "Failed to update domain list type");
-    }
-  };
-
-  const del = async (d) => {
-    if (!confirm(`Remove ${d.domain}?`)) return;
-    try {
-      await remove("domain_lists", d.id);
-      await load();
-    } catch (err) {
-      alert(err.message || "Failed to delete domain");
     }
   };
 
@@ -135,6 +129,21 @@ export default function Domains() {
         </select>
       </div>
 
+      <ConfirmDialog
+        open={!!target}
+        title="هل أنت متأكد من حذف هذا النطاق؟"
+        message=".هذا الإجراء لا يمكن التراجع عنه"
+        details={[target?.domain, target?.list_type]}
+        confirmText="حذف"
+        cancelText="إلغاء"
+        onCancel={() => setTarget(null)}
+        onConfirm={async () => {
+          await remove("domain_lists", target.id); // Fixed endpoint name
+          setTarget(null);
+          load();
+        }}
+      />
+
       <table>
         <thead>
           <tr>
@@ -159,8 +168,8 @@ export default function Domains() {
                   : "—"}
               </td>
               <td>
-                <button onClick={() => toggle(d)}>Switch list</button>{" "}
-                <button className="danger" onClick={() => del(d)}>
+                <button onClick={() => toggle(d)}>Switch list</button>{""}
+                <button className="danger" onClick={() => setTarget(d)}>
                   Delete
                 </button>
               </td>

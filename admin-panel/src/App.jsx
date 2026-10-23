@@ -5,6 +5,8 @@ import Login from "./pages/Login";
 import Users from "./pages/Users";
 
 import Domains from "./pages/Domains";
+import ScanList from "./pages/ScanList";
+import ScanDetail from "./pages/ScanDetail";
 
 function Protected({ children }) {
   return getToken() ? children : <Navigate to="/login" replace />;
@@ -18,8 +20,12 @@ export default function App() {
         <Route element={<Protected><Layout /></Protected>}>
           <Route path="/" element={<Navigate to="/users" replace />} />
           <Route path="/users" element={<Users />} />
-        
+              
+          {/* Example list routes */}
           <Route path="/domains" element={<Domains />} />
+          <Route path="/emails" element={<ScanList kind="email" title="البريد الإلكتروني" />} />
+          <Route path="/messages" element={<ScanList kind="message" title="الرسائل" />} />
+          <Route path="/scans/:id" element={<ScanDetail />} />
         </Route>
       </Routes>
     </BrowserRouter>

@@ -30,13 +30,21 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
     password_hash: Mapped[str] = mapped_column(String(255))
     role: Mapped[str] = mapped_column(String(20), default="user", server_default="user")
-    permissions: Mapped[list["Permission"]] = relationship(secondary=user_permissions,back_populates="users",)
+    permissions: Mapped[list["Permission"]] = relationship(secondary=user_permissions, back_populates="users")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     scans: Mapped[list["Scan"]] = relationship(back_populates="user", cascade="all, delete-orphan")
     feedback_items: Mapped[list["Feedback"]] = relationship(back_populates="user", cascade="all, delete-orphan")
     profile: Mapped["EmployeeProfile"] = relationship(
-    back_populates="user", cascade="all, delete-orphan", uselist=False
-)
+        back_populates="user", cascade="all, delete-orphan", uselist=False
+    )
+
+    @property
+    def department(self) -> str | None:
+        return self.profile.department if self.profile else None
+
+    @property
+    def position(self) -> str | None:
+        return self.profile.position if self.profile else None
 class DomainList(Base):
     __tablename__ = "domain_lists"
 

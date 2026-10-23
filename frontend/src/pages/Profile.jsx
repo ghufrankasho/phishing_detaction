@@ -8,10 +8,7 @@ const EMPTY_EMP = {
   department: "", position: "", employee_number: "",
   hire_date: "", phone: "", extension: "", notes: "",
 };
-const DEPARTMENTS = [
-  "الإدارة العامة", "تقنية المعلومات", "الموارد البشرية", "المالية",
-  "التسويق", "المبيعات", "خدمة العملاء", "الشؤون القانونية",
-];
+ 
 
 // server -> form: nulls become empty strings
 const toForm = (data) =>
@@ -119,20 +116,13 @@ export default function Profile() {
 
           <div className="field-grid">
             <div className="field">
-              <label htmlFor="department"><i className="bx bxs-buildings"></i>القسم</label>
-              <input id="department" name="department" type="text" list="departments"
-                value={emp.department} onChange={handleEmpChange}
-                maxLength={100} disabled={!empLoaded} />
-              <datalist id="departments">
-                {DEPARTMENTS.map((d) => <option key={d} value={d} />)}
-              </datalist>
-            </div>
+            <label htmlFor="department"><i className="bx bxs-envelope"></i>القسم  </label>
+            <input id="department" type="department" value={user.department || ""} disabled />
+          </div>
 
             <div className="field">
-              <label htmlFor="position"><i className="bx bxs-briefcase-alt-2"></i>المنصب</label>
-              <input id="position" name="position" type="text"
-                value={emp.position} onChange={handleEmpChange}
-                maxLength={100} disabled={!empLoaded} />
+            <label htmlFor="position"><i className="bx bxs-envelope"></i> المنصب</label>
+            <input id="position" type="position" value={user.position || ""} disabled />
             </div>
 
             <div className="field">

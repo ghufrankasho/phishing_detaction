@@ -3,6 +3,11 @@ import { list, update, remove } from "../api";
 import Pagination from "../components/Pagination";
 import ConfirmDialog from "../components/ConfirmDialog";
 
+const DEPARTMENTS = [
+  "الإدارة العامة", "تقنية المعلومات", "الموارد البشرية", "المالية",
+  "التسويق", "المبيعات", "خدمة العملاء", "الشؤون القانونية",
+];
+
 export default function Users() {
   const [rows, setRows] = useState([]);
   const [total, setTotal] = useState(0);
@@ -10,16 +15,18 @@ export default function Users() {
   const [q, setQ] = useState("");
   const [error, setError] = useState("");
   const [target, setTarget] = useState(null);
+  
+  // State for the work items popup modal
+  const [modalData, setModalData] = useState(null); // { user, type, items, loading }
+  
   const perPage = 15;
-  // Defined list of all assignable system permissions
+
   const ALL_PERMISSIONS = [
-    
-    { id: "manage_emails", label: "Manage Emails" },
-    { id: "manage_domains", label: "Manage Domains" },
-    { id: "manage_messages", label: "Manage Messages" },
-   
+    { id: "manage_emails", label: "Manage Emails", key: "emails" },
+    { id: "manage_domains", label: "Manage Domains", key: "domains" },
+    { id: "manage_messages", label: "Manage Messages", key: "messages" },
   ];
-  // Memoize load to maintain a stable reference across renders
+
   const load = useCallback(async () => {
     try {
       setError("");
@@ -35,10 +42,8 @@ export default function Users() {
     }
   }, [page, q, perPage]);
 
-  // Execute load inside useEffect with cleanup flag to prevent race conditions
   useEffect(() => {
     let isMounted = true;
-
     const fetchData = async () => {
       try {
         setError("");
@@ -57,53 +62,52 @@ export default function Users() {
         }
       }
     };
-
     fetchData();
-
-    return () => {
-      isMounted = false; // Prevents state updates on unmounted components
-    };
+    return () => { isMounted = false; };
   }, [page, q, perPage]);
 
-  // Helper to parse saved permissions array safely
-    const getUserPermissions = (user) => {
-      const raw = user.permissions || user.Permission || user.role;
-      if (Array.isArray(raw)) return raw;
-      if (typeof raw === "string") {
-        try {
-          // Parse JSON string if stored as '["manage_emails","manage_domains"]'
-          const parsed = JSON.parse(raw);
-          if (Array.isArray(parsed)) return parsed;
-        } catch {
-          // Fallback for single string values like "admin" or "manage_emails"
-          return [raw];
-        }
-      }
-      return [];
-    };
-    // Toggle a specific permission for a user
-    const togglePermission = async (user, permissionId) => {
-      const currentPerms = getUserPermissions(user);
-      let updatedPerms;
-
-      if (currentPerms.includes(permissionId)) {
-        // Remove permission if already assigned
-        updatedPerms = currentPerms.filter((p) => p !== permissionId);
-      } else {
-        // Add new permission
-        updatedPerms = [...currentPerms, permissionId];
-      }
-
+  const getUserPermissions = (user) => {
+    const raw = user.permissions || user.Permission || user.role;
+    if (Array.isArray(raw)) return raw;
+    if (typeof raw === "string") {
       try {
-        // Sends array of updated permissions to API
-        await update("users", user.id, { permissions: updatedPerms });
-        await load();
-      } catch (e) {
-        alert(e.message || "Failed to update permissions");
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) return parsed;
+      } catch {
+        return [raw];
       }
-    };
+    }
+    return [];
+  };
 
-  
+  const togglePermission = async (user, permissionId) => {
+    const currentPerms = getUserPermissions(user);
+    const updatedPerms = currentPerms.includes(permissionId)
+      ? currentPerms.filter((p) => p !== permissionId)
+      : [...currentPerms, permissionId];
+
+    try {
+      await update("users", user.id, { permissions: updatedPerms });
+      await load();
+    } catch (e) {
+      alert(e.message || "Failed to update permissions");
+    }
+  };
+
+  // Open modal and fetch user work items
+  const openWorkItemsModal = async (user, type) => {
+    setModalData({ user, type, items: [], loading: true });
+    try {
+      console.log(type)
+      const res = await list(`users/${user.id}/work-items?item_type=${type}`);
+      // Assuming your api.js list() or custom fetch helper returns data directly or wrapped
+      setModalData({ user, type, items: res.data || res, loading: false });
+    } catch (e) {
+      alert(e.message || "Failed to fetch work items");
+      setModalData(null);
+    }
+  };
+
   return (
     <>
       <h1>Users & Permissions</h1>
@@ -117,6 +121,7 @@ export default function Users() {
         }}
       />
       {error && <p className="error">{error}</p>}
+
       <ConfirmDialog
         open={!!target}
         title="هل أنت متأكد من حذف هذا الموظف؟"
@@ -131,15 +136,82 @@ export default function Users() {
           load();
         }}
       />
+
+      {/* Work Items Popup Modal */}
+      {modalData && (
+        <div className="modal-backdrop" style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", background: "rgba(0,0,0,0.5)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1000 }}>
+          <div className="modal-content" style={{ background: "#fff", padding: "20px", borderRadius: "8px", width: "700px", maxHeight: "80vh", overflowY: "auto" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px" }}>
+              <h3>سجل عمل المستخدم: {modalData.user.name} ({modalData.type.toUpperCase()})</h3>
+              <button onClick={() => setModalData(null)} style={{ cursor: "pointer", padding: "4px 8px" }}>✕ إغلاق</button>
+            </div>
+
+            {modalData.loading ? (
+              <p>جارٍ التحميل...</p>
+            ) : modalData.items.length === 0 ? (
+              <p>لا توجد عناصر مسجلة لهذا المستخدم.</p>
+            ) : (
+              <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                <thead>
+                  <tr style={{ borderBottom: "2px solid #eee", textAlign: "right" }}>
+                    <th style={{ padding: "8px" }}>ID</th>
+                    <th style={{ padding: "8px" }}>المحتوى / الرابط</th>
+                    <th style={{ padding: "8px" }}>النتيجة</th>
+                    <th style={{ padding: "8px" }}>التاريخ</th>
+                    <th style={{ padding: "8px" }}>الإجراء</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {modalData.items.map((item) => (
+                    <tr key={item.id} style={{ borderBottom: "1px solid #f0f0f0" }}>
+                      <td style={{ padding: "8px" }}>{item.id}</td>
+                      <td style={{ padding: "8px", maxWidth: "250px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {item.content}
+                      </td>
+                      <td style={{ padding: "8px" }}>
+                        <span style={{ 
+                          padding: "2px 6px", 
+                          borderRadius: "4px", 
+                          fontSize: "12px",
+                          backgroundColor: item.score > 0.5 ? "#fee2e2" : "#dcfce7",
+                          color: item.score > 0.5 ? "#991b1b" : "#166534"
+                        }}>
+                          {Math.round((item.score || 0) * 100)}%
+                        </span>
+                      </td>
+                      <td style={{ padding: "8px", fontSize: "12px" }}>
+                        {item.created_at ? item.created_at.split("T")[0] : "—"}
+                      </td>
+                      <td style={{ padding: "8px" }}>
+                        <a 
+                          href={`/scans/${item.id}`} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          style={{ fontSize: "12px", color: "#2563eb", textDecoration: "underline" }}
+                        >
+                          عرض التفاصيل
+                        </a>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+            <button style={{ marginTop: "20px", padding: "8px 16px", cursor: "pointer" }} onClick={() => setModalData(null)}>إغلاق النافذة</button>
+          </div>
+        </div>
+      )}
+
       <table>
         <thead>
           <tr>
             <th>ID</th>
             <th>Name</th>
             <th>Email</th>
-            <th>Permissions</th>
-            <th>Created</th>
-            <th></th>
+            <th>Department</th>
+            <th>Position</th>
+            <th>Permissions & Activity</th>
+            <th>Action</th>
           </tr>
         </thead>
         <tbody>
@@ -152,39 +224,81 @@ export default function Users() {
                 <td>{u.name}</td>
                 <td>{u.email}</td>
                 <td>
-                  <div className="permissions-grid" style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                  <select
+                    value={u.department || ""}
+                    onChange={async (e) => {
+                      const newDept = e.target.value;
+                      try {
+                        await update("users", u.id, { department: newDept || null });
+                        await load();
+                      } catch (err) {
+                        alert(err.message || "Failed to update department");
+                      }
+                    }}
+                  >
+                    <option value="">اختر القسم...</option>
+                    {DEPARTMENTS.map((dept) => (
+                      <option key={dept} value={dept}>{dept}</option>
+                    ))}
+                  </select>
+                </td>
+                <td>
+                  <input
+                    type="text"
+                    defaultValue={u.position || ""}
+                    placeholder="المنصب..."
+                    onBlur={async (e) => {
+                      const newPos = e.target.value;
+                      if (newPos !== (u.position || "")) {
+                        try {
+                          await update("users", u.id, { position: newPos || null });
+                          await load();
+                        } catch (err) {
+                          alert(err.message || "Failed to update position");
+                        }
+                      }
+                    }}
+                  />
+                </td>
+                <td>
+                  <div className="permissions-grid" style={{ display: "flex", flexWrap: "wrap", gap: "8px", alignItems: "center" }}>
                     {ALL_PERMISSIONS.map((p) => {
                       const isChecked = userPerms.includes(p.id);
                       return (
-                        <label
-                          key={p.id}
-                          style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: "4px",
-                            padding: "4px 8px",
-                            borderRadius: "4px",
-                            border: "1px solid #ccc",
-                            backgroundColor: isChecked ? "#e0f2fe" : "#f9fafb",
-                            cursor: "pointer",
-                            fontSize: "12px",
-                          }}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={isChecked}
-                            onChange={() => togglePermission(u, p.id)}
-                          />
-                          {p.label}
-                        </label>
+                        <div key={p.id} style={{ display: "flex", gap: "4px", alignItems: "center" }}>
+                          <label
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "4px",
+                              padding: "4px 8px",
+                              borderRadius: "4px",
+                              border: "1px solid #ccc",
+                              backgroundColor: isChecked ? "#e0f2fe" : "#f9fafb",
+                              cursor: "pointer",
+                              fontSize: "12px",
+                            }}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={() => togglePermission(u, p.id)}
+                            />
+                            {p.label}
+                          </label>
+                          {/* Show action button if user has this permission */}
+                          {isChecked && (
+                            <button
+                              onClick={() => openWorkItemsModal(u, p.key)}
+                              style={{ fontSize: "11px", padding: "4px 6px", cursor: "pointer" }}
+                            >
+                              View {p.key}
+                            </button>
+                          )}
+                        </div>
                       );
                     })}
                   </div>
-                </td>
-                <td>
-                  {u.created_at
-                    ? u.created_at.split("T")[0]
-                    : "—"}
                 </td>
                 <td>
                   <button className="danger" onClick={() => setTarget(u)}>Delete</button>
@@ -194,14 +308,13 @@ export default function Users() {
           })}
         </tbody>
       </table>
-    
+
       <Pagination
         page={page}
         perPage={perPage}
         total={total}
         onChange={setPage}
       />
-      
     </>
   );
 }
