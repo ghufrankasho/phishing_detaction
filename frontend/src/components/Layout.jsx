@@ -1,13 +1,15 @@
+import React from "react";
 import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
-import { useAuth } from "../api/context/AuthContext";
+import { useAuth } from "../context/AuthContext";
 import Sliders from "../components/Slider";
-// قائمة الروابط في الهيدر
+
+// Define navigation items with an optional allowedRoles or permission key
 const NAV = [
   { to: "/dashboard", icon: "bxs-dashboard", label: "الرئيسية", end: true },
   { to: "/scan", icon: "bx-search-alt", label: "فحص جديد" },
-  { to: "/emails", icon: "bxs-envelope", label: "رسائل البريد" },
-  { to: "/messages", icon: "bxs-message-dots", label: "الرسائل" },
-  { to: "/domains", icon: "bx-globe", label: "النطاقات والروابط" },
+  { to: "/emails", icon: "bxs-envelope", label: "رسائل البريد", permission: "manage_emails" },
+  { to: "/messages", icon: "bxs-message-dots", label: "الرسائل", permission: "manage_messages" },
+  { to: "/domains", icon: "bx-globe", label: "النطاقات والروابط", permission: "manage_domains" },
   { to: "/profile", icon: "bxs-user", label: "الملف الشخصي" },
 ];
 
@@ -19,10 +21,27 @@ export default function Layout() {
     logout();
     navigate("/login");
   };
-  
+
   const handleProfile = () => {
     navigate("/profile");
   };
+
+  // Filter navigation links based on user role or specific permissions
+  const filteredNav = NAV.filter((item) => {
+    
+    // If the item doesn't require any special permission, always show it
+    if (!item.permission) return true;
+
+    if (user?.permissions && Array.isArray(user.permissions)) {
+      return user.permissions.includes(item.permission);
+    }
+
+    // Alternatively, if permissions are stored as boolean flags directly on the user object:
+    // e.g., user?.manage_emails === true
+    if (user?.[item.permission] === true) return true;
+
+    return false;
+  });
 
   return (
     <div className="app">
@@ -43,9 +62,9 @@ export default function Layout() {
             </div>
           </Link>
 
-          {/* القائمة الرئيسية في الهيدر */}
+          {/* القائمة الرئيسية المفلترة حسب صلاحيات المستخدم */}
           <nav className="header-nav">
-            {NAV.map((item) => (
+            {filteredNav.map((item) => (
               <NavLink key={item.to} to={item.to} end={item.end} className="nav-link">
                 <i className={`bx ${item.icon}`}></i>
                 <span>{item.label}</span>

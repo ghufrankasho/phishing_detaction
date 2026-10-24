@@ -14,7 +14,7 @@
     "jwt-decode": "^4.0.0",
     "ra-data-simple-rest": "^5.15.4",
     "react": "latest",
-    "react-admin": "^5.15.4",
+  
     "react-dom": "latest",
     "react-router-dom": "^7.18.4",
     "swiper": "^14.3.0",

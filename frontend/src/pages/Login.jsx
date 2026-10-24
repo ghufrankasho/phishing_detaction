@@ -14,12 +14,11 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
     try {
-      await login(form.email, form.password);
+      const user = await loginRequest(email, password);          // calls /login and saves the token
       navigate("/dashboard");
     } catch (err) {
-      setError(err.response?.data?.message || "Login failed");
+      setError(err.message);
     }
   };
 

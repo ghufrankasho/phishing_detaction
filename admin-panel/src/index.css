@@ -1,0 +1,31 @@
+* { box-sizing: border-box; }
+body { margin: 0; font-family: system-ui, sans-serif; background: #f4f6f8; color: #1f2933; }
+.shell { display: flex; min-height: 100vh; }
+.sidebar { width: 230px; background: #0f3a44; color: #fff; padding: 20px; display: flex; flex-direction: column; }
+.sidebar nav { display: flex; flex-direction: column; gap: 4px; margin-top: 20px; flex: 1; }
+.sidebar a { color: #cfe3e8; text-decoration: none; padding: 10px 12px; border-radius: 8px; }
+.sidebar a.active, .sidebar a:hover { background: #1b5663; color: #fff; }
+.sidebar-footer { display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
+.content { flex: 1; padding: 28px; overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 10px; overflow: hidden; }
+th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #e5e9ed; font-size: 14px; }
+th { background: #eef2f5; }
+.truncate { max-width: 280px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+button { padding: 6px 12px; border: 0; border-radius: 6px; background: #1b5663; color: #fff; cursor: pointer; }
+button:disabled { opacity: .4; cursor: default; }
+button.danger { background: #c0392b; }
+input, select { padding: 8px 10px; border: 1px solid #cbd2d9; border-radius: 6px; }
+.filters, .inline-form { display: flex; gap: 10px; margin: 12px 0; flex-wrap: wrap; }
+.search { margin: 12px 0; width: 300px; }
+.card { background: #fff; padding: 18px; border-radius: 10px; }
+.pagination { display: flex; gap: 12px; align-items: center; justify-content: center; margin-top: 16px; }
+.badge { padding: 2px 8px; border-radius: 12px; font-size: 12px; background: #ddd; }
+.badge.safe, .badge.whitelist { background: #d4efdf; color: #1e8449; }
+.badge.suspicious { background: #fdebd0; color: #b9770e; }
+.badge.phishing, .badge.blacklist { background: #f5b7b1; color: #922b21; }
+.error { color: #c0392b; }
+.login-wrap { display: grid; place-items: center; min-height: 100vh; }
+.login { display: flex; flex-direction: column; gap: 12px; width: 340px; }
+.modal-bg { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: grid; place-items: center; }
+.modal { width: 560px; max-width: 90vw; }
+.modal pre { white-space: pre-wrap; background: #f4f6f8; padding: 12px; border-radius: 8px; max-height: 300px; overflow: auto; }

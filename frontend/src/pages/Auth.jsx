@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../api/context/AuthContext";
+import { useAuth } from "../context/AuthContext";
 import { getErrorMessage } from "../api/getErrorMessage";
- 
+
 export default function Auth({ initialMode = "signin" }) {
   const { login, register } = useAuth();
   const navigate = useNavigate();
@@ -48,7 +48,8 @@ export default function Auth({ initialMode = "signin" }) {
     try {
 
       await login(signInForm.email, signInForm.password);
-
+      const role = localStorage.getItem("role");
+      console.log("User role:", role); // Log the role to the console
       navigate("/dashboard");
     } catch (err) {
       setSignInError(getErrorMessage(err, "فشل تسجيل الدخول"));
