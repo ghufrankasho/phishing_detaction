@@ -1,11 +1,12 @@
 import { useEffect, useState, useCallback } from "react";
+import { Link } from "react-router-dom";
 import { list, update, remove } from "../api";
 import Pagination from "../components/Pagination";
 import ConfirmDialog from "../components/ConfirmDialog";
 
 const DEPARTMENTS = [
-  "الإدارة العامة", "تقنية المعلومات", "الموارد البشرية", "المالية",
-  "التسويق", "المبيعات", "خدمة العملاء", "الشؤون القانونية",
+  "General Administration", "Information Technology", "Human Resources", "Finance",
+  "Marketing", "Sales", "Customer Service", "Legal Affairs",
 ];
 
 export default function Users() {
@@ -98,9 +99,8 @@ export default function Users() {
   const openWorkItemsModal = async (user, type) => {
     setModalData({ user, type, items: [], loading: true });
     try {
-      console.log(type)
+      console.log(type);
       const res = await list(`users/${user.id}/work-items?item_type=${type}`);
-      // Assuming your api.js list() or custom fetch helper returns data directly or wrapped
       setModalData({ user, type, items: res.data || res, loading: false });
     } catch (e) {
       alert(e.message || "Failed to fetch work items");
@@ -124,11 +124,11 @@ export default function Users() {
 
       <ConfirmDialog
         open={!!target}
-        title="هل أنت متأكد من حذف هذا الموظف؟"
-        message=".هذا الإجراء لا يمكن التراجع عنه"
+        title="Are you sure you want to delete this employee?"
+        message="This action cannot be undone."
         details={[target?.name, target?.email]}
-        confirmText="حذف"
-        cancelText="إلغاء"
+        confirmText="Delete"
+        cancelText="Cancel"
         onCancel={() => setTarget(null)}
         onConfirm={async () => {
           await remove("users", target.id);
@@ -142,23 +142,23 @@ export default function Users() {
         <div className="modal-backdrop" style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", background: "rgba(0,0,0,0.5)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1000 }}>
           <div className="modal-content" style={{ background: "#fff", padding: "20px", borderRadius: "8px", width: "700px", maxHeight: "80vh", overflowY: "auto" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px" }}>
-              <h3>سجل عمل المستخدم: {modalData.user.name} ({modalData.type.toUpperCase()})</h3>
-              <button onClick={() => setModalData(null)} style={{ cursor: "pointer", padding: "4px 8px" }}>✕ إغلاق</button>
+              <h3> {modalData.type.toUpperCase() }</h3>
+              <button onClick={() => setModalData(null)} style={{ cursor: "pointer", padding: "4px 8px" }}>✕ Close</button>
             </div>
 
             {modalData.loading ? (
-              <p>جارٍ التحميل...</p>
+              <p>Loading...</p>
             ) : modalData.items.length === 0 ? (
-              <p>لا توجد عناصر مسجلة لهذا المستخدم.</p>
+              <p>No recorded items found for this user.</p>
             ) : (
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
                 <thead>
-                  <tr style={{ borderBottom: "2px solid #eee", textAlign: "right" }}>
+                  <tr style={{ borderBottom: "2px solid #eee", textAlign: "left" }}>
                     <th style={{ padding: "8px" }}>ID</th>
-                    <th style={{ padding: "8px" }}>المحتوى / الرابط</th>
-                    <th style={{ padding: "8px" }}>النتيجة</th>
-                    <th style={{ padding: "8px" }}>التاريخ</th>
-                    <th style={{ padding: "8px" }}>الإجراء</th>
+                    <th style={{ padding: "8px" }}>Content / Link</th>
+                    <th style={{ padding: "8px" }}>Phishing Rate</th>
+                    <th style={{ padding: "8px" }}>Date</th>
+                    <th style={{ padding: "8px" }}>Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -176,28 +176,26 @@ export default function Users() {
                           backgroundColor: item.score > 0.5 ? "#fee2e2" : "#dcfce7",
                           color: item.score > 0.5 ? "#991b1b" : "#166534"
                         }}>
-                          {Math.round((item.score || 0) * 100)}%
+                          {Math.round((item.score || 0) )}%
                         </span>
                       </td>
                       <td style={{ padding: "8px", fontSize: "12px" }}>
                         {item.created_at ? item.created_at.split("T")[0] : "—"}
                       </td>
                       <td style={{ padding: "8px" }}>
-                        <a 
-                          href={`/scans/${item.id}`} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
+                        <Link
+                          to={`/scans/${item.id}`}
                           style={{ fontSize: "12px", color: "#2563eb", textDecoration: "underline" }}
                         >
-                          عرض التفاصيل
-                        </a>
+                          View Details
+                        </Link>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             )}
-            <button style={{ marginTop: "20px", padding: "8px 16px", cursor: "pointer" }} onClick={() => setModalData(null)}>إغلاق النافذة</button>
+            <button style={{ marginTop: "20px", padding: "8px 16px", cursor: "pointer" }} onClick={() => setModalData(null)}>Close Window</button>
           </div>
         </div>
       )}
@@ -236,7 +234,7 @@ export default function Users() {
                       }
                     }}
                   >
-                    <option value="">اختر القسم...</option>
+                    <option value="">Select department...</option>
                     {DEPARTMENTS.map((dept) => (
                       <option key={dept} value={dept}>{dept}</option>
                     ))}
@@ -246,7 +244,7 @@ export default function Users() {
                   <input
                     type="text"
                     defaultValue={u.position || ""}
-                    placeholder="المنصب..."
+                    placeholder="Position..."
                     onBlur={async (e) => {
                       const newPos = e.target.value;
                       if (newPos !== (u.position || "")) {
@@ -262,7 +260,7 @@ export default function Users() {
                 </td>
                 <td>
                   <div className="permissions-grid" style={{ display: "flex", flexWrap: "wrap", gap: "8px", alignItems: "center" }}>
-                    {ALL_PERMISSIONS.map((p) => {
+                    {ALL_PERMISSIONS.now ? ALL_PERMISSIONS : ALL_PERMISSIONS.map((p) => {
                       const isChecked = userPerms.includes(p.id);
                       return (
                         <div key={p.id} style={{ display: "flex", gap: "4px", alignItems: "center" }}>
@@ -286,7 +284,6 @@ export default function Users() {
                             />
                             {p.label}
                           </label>
-                          {/* Show action button if user has this permission */}
                           {isChecked && (
                             <button
                               onClick={() => openWorkItemsModal(u, p.key)}

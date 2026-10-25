@@ -4,14 +4,16 @@ import api from "../api/axios";
 import { getErrorMessage } from "../api/getErrorMessage";
 import VerdictBadge from "../components/VerdictBadge";
 import { KIND_LABEL, formatDate } from "../lib/labels";
+import { useAuth } from "../context/AuthContext";
 
 const CARDS = [
-  { kind: "email", to: "/emails", icon: "bxs-envelope", label: "رسائل البريد" },
-  { kind: "message", to: "/messages", icon: "bxs-message-dots", label: "الرسائل" },
-  { kind: "url", to: "/domains", icon: "bx-globe", label: "النطاقات والروابط" },
+  { kind: "email", to: "/emails", icon: "bxs-envelope", label: "رسائل البريد", permission: "manage_emails" },
+  { kind: "message", to: "/messages", icon: "bxs-message-dots", label: "الرسائل", permission: "manage_messages" },
+  { kind: "url", to: "/domains", icon: "bx-globe", label: "النطاقات والروابط", permission: "manage_domains" },
 ];
 
 export default function Overview() {
+  const { user } = useAuth();
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
 
@@ -22,15 +24,31 @@ export default function Overview() {
       .catch((err) => setError(getErrorMessage(err, "تعذّر تحميل الإحصائيات")));
   }, []);
 
+  // same permission check as Layout.jsx
+  const allowedCards = CARDS.filter((c) =>
+    Array.isArray(user?.permissions)
+      ? user.permissions.includes(c.permission)
+      : user?.[c.permission] === true
+  );
+  const allowedKinds = allowedCards.map((c) => c.kind);
+
   if (error) return <p className="error">{error}</p>;
   if (!data) return <p className="helper">جارٍ التحميل...</p>;
 
+  if (allowedCards.length === 0) {
+    return (
+      <div className="container">
+        <p className="empty">ليس لديك صلاحية لعرض أي نوع من الفحوصات. تواصل مع المسؤول.</p>
+      </div>
+    );
+  }
+
+  const recent = data.recent.filter((s) => allowedKinds.includes(s.kind));
+
   return (
     <div className="container">
-       
-
       <div className="stat-grid">
-        {CARDS.map((card) => {
+        {allowedCards.map((card) => {
           const s = data.by_kind[card.kind];
           return (
             <Link to={card.to} className="stat-card" key={card.kind}>
@@ -61,7 +79,7 @@ export default function Overview() {
 
       <section className="panel">
         <h3>آخر الفحوصات</h3>
-        {data.recent.length === 0 ? (
+        {recent.length === 0 ? (
           <p className="empty">
             لم تُجرِ أي فحص بعد. <Link className="back-link" to="/scan">ابدأ فحصاً جديداً</Link>
           </p>
@@ -77,7 +95,7 @@ export default function Overview() {
                 </tr>
               </thead>
               <tbody>
-                {data.recent.map((s) => (
+                {recent.map((s) => (
                   <tr key={s.id}>
                     <td>{KIND_LABEL[s.kind]}</td>
                     <td className="preview">

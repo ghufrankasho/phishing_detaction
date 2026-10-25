@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getOne, list } from "../api"; // Using your api.js helpers
+import {  list } from "../api"; // Using your api.js helpers
 import VerdictBadge from "../components/VerdictBadge";
  
 
@@ -39,7 +39,7 @@ export default function ScanList({ kind, title }) {
       })
       .catch((err) => {
         if (!cancelled) {
-          setError(err.message || "تعذّر تحميل القائمة");
+          setError(err.message || "Error while loading the list");
         }
       });
 
@@ -55,32 +55,32 @@ export default function ScanList({ kind, title }) {
     <div className="container">
       <div className="page-head">
         <h2 className="page-title">{title}</h2>
-        {data && <p className="lead">{data.total} فحص</p>}
+        {data && <p className="lead">{data.total} test</p>}
       </div>
 
       <section className="panel">
         <div className="toolbar">
           <select
-            aria-label="تصفية حسب النتيجة"
+            aria-label="Filter according to result"
             value={verdict}
             onChange={(e) => {
               setVerdict(e.target.value);
               setPage(1);
             }}
           >
-            <option value="">كل النتائج</option>
-            <option value="safe">آمن</option>
-            <option value="suspicious">مشبوه</option>
-            <option value="phishing">احتيال</option>
+            <option value=""> All Result</option>
+            <option value="safe">Safe</option>
+            <option value="suspicious">Suspicious</option>
+            <option value="phishing">Phishing</option>
           </select>
-          <Link className="back-link" to="/scan">+ فحص جديد</Link>
+          <Link className="back-link" to="/scan">New Test +</Link>
         </div>
 
         {error && <p className="error">{error}</p>}
-        {!data && !error && <p className="helper">جارٍ التحميل...</p>}
+        {!data && !error && <p className="helper"> Loading...</p>}
 
         {data && data.items.length === 0 && (
-          <p className="empty">لا توجد نتائج هنا بعد.</p>
+          <p className="empty">No result yet.</p>
         )}
 
         {data && data.items.length > 0 && (
@@ -88,11 +88,11 @@ export default function ScanList({ kind, title }) {
             <table className="data">
               <thead>
                 <tr>
-                  {isUrl && <th>النطاق</th>}
-                  <th>المحتوى</th>
-                  <th>النتيجة</th>
-                  <th>نسبة الخطر</th>
-                  <th>التاريخ</th>
+                  {isUrl && <th>Domain</th>}
+                  <th>Content</th>
+                  <th>Result</th>
+                  <th>Error Rate</th>
+                  <th>Date</th>
                 </tr>
               </thead>
               <tbody>
@@ -100,7 +100,7 @@ export default function ScanList({ kind, title }) {
                   <tr key={s.id}>
                     {isUrl && <td>{s.domain || "—"}</td>}
                     <td className="preview">
-                      <Link to={`/scans/${s.id}`}>{s.content ? s.content.substring(0, 50) + "..." : "عرض التفاصيل"}</Link>
+                      <Link to={`/scans/${s.id}`}>{s.content ? s.content.substring(0, 50) + "..." : "more details"}</Link>
                     </td>
                     <td><VerdictBadge verdict={s.verdict || s.label} /></td>
                     <td>{Math.round((s.score || 0) * 100)}%</td>
@@ -115,11 +115,11 @@ export default function ScanList({ kind, title }) {
         {data && pages > 1 && (
           <div className="pager">
             <button className="link-btn" disabled={page <= 1} onClick={() => setPage(page - 1)}>
-              السابق
+              previous
             </button>
             <span>{page} / {pages}</span>
             <button className="link-btn" disabled={page >= pages} onClick={() => setPage(page + 1)}>
-              التالي
+              next
             </button>
           </div>
         )}

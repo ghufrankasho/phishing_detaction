@@ -32,12 +32,26 @@ async function request(path, options = {}) {
   }
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
-    throw new Error(err.detail || "Request failed");
+    throw new Error(formatError(err.detail));
   }
   const total = Number((res.headers.get("Content-Range") || "").split("/")[1] || 0);
   return { data: await res.json(), total };
 }
 
+function formatError(detail) {
+  if (!detail) return "Request failed";
+  if (typeof detail === "string") return detail;
+  if (Array.isArray(detail)) {
+    return detail
+      .map((d) => {
+        const field = d.loc?.[d.loc.length - 1];
+        const msg = (d.msg || "").replace(/^Value error, /, "");
+        return field && field !== "body" ? `${field}: ${msg}` : msg;
+      })
+      .join(" · ");
+  }
+  return "Request failed";
+}
 export const list = (resource, { page = 1, perPage = 15, sort = "id", order = "DESC", filter = {} } = {}) => {
   const start = (page - 1) * perPage;
   const qs = new URLSearchParams({
