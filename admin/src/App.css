@@ -316,3 +316,38 @@
   background: linear-gradient(135deg, #0284c7 0%, #0d9488 100%);
   box-shadow: 0 4px 12px rgba(13, 148, 136, 0.3);
 }
+/* ---------- Scan detail page ---------- */
+.sd-page { max-width: 980px; }
+.sd-back { background: none; border: 0; padding: 0; margin-bottom: 18px;
+  color: #0f766e; font-size: 16px; cursor: pointer; }
+.sd-back:hover { text-decoration: underline; background: none; }
+.sd-panel { background: #fff; border-radius: 14px; padding: 28px;
+  box-shadow: 0 2px 14px rgba(15, 58, 68, .08); }
+.sd-head { display: flex; justify-content: space-between; align-items: flex-start;
+  gap: 24px; padding-bottom: 20px; border-bottom: 1px solid #e5e9ed; }
+.sd-head h2 { margin: 0 0 6px; font-size: 26px; }
+.sd-helper { margin: 4px 0 0; color: #6b7a86; font-size: 14px; }
+.sd-error { color: #c0392b; }
+
+.sd-score { text-align: center; }
+.sd-score span { display: block; font-size: 46px; font-weight: 800; line-height: 1; }
+.sd-score small { color: #6b7a86; font-size: 13px; }
+.sd-score.safe span { color: #15803d; }
+.sd-score.suspicious span { color: #b45309; }
+.sd-score.phishing span { color: #b4233f; }
+
+.sd-verdict { margin: 22px 0; padding: 16px 18px; border-radius: 8px;
+  border-left: 5px solid; font-size: 15px; }
+.sd-verdict strong { margin-right: 8px; }
+.sd-verdict.safe { background: #e8f6ee; border-color: #15803d; color: #14532d; }
+.sd-verdict.suspicious { background: #fdf3e1; border-color: #b45309; color: #78350f; }
+.sd-verdict.phishing { background: #fbe9ee; border-color: #b4233f; color: #7f1d2d; }
+
+.sd-panel h3 { margin: 26px 0 12px; font-size: 20px; }
+.sd-content { padding: 16px 18px; background: #f7fafc; border: 1px solid #e1e8ee;
+  border-radius: 10px; font-size: 15px; white-space: pre-wrap; word-break: break-word; }
+.sd-add { display: flex; gap: 10px; flex-wrap: wrap; }
+.sd-add input { flex: 1; min-width: 160px; }
+.sd-ok { color: #15803d; margin-top: 12px; }
+.sd-ok a { color: #0f766e; }
+

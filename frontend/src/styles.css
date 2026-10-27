@@ -971,3 +971,67 @@ body { background: radial-gradient(circle at 10% 0%, #e0f2f8 0, #eef4fa 40%, #f1
 .log .overlay { background-image: linear-gradient(135deg, #0e7490, #1e3a8a); }
 
 .log .auth-error { color: var(--danger); }
+/* ---------- Animated Splash Screen Styles ---------- */
+
+/* الحاوية الرئيسية الشاملة للخلفية */
+.splash-animated-bg {
+  background-image: url("/images/background/image.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+/* طبقة التظليل الشفافة لتحسين بصرية الأحرف فوق الخلفية */
+.splash-overlay {
+  width: 100%;
+  height: 100%;
+  background: rgba(5, 11, 20, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* حاوية أحرف اللوجو */
+.logo-letters-container {
+  display: flex;
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(2rem, 5vw, 4.5rem);
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: 0.05em;
+  text-shadow: 0 0 15px rgba(29, 211, 197, 0.6);
+}
+
+.space-letter {
+  width: 0.4em;
+}
+
+/* حركة سقوط أحرف اللوجو حرفاً تلو الآخر */
+.falling-letter {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(-120px);
+  animation: dropAndBounce 0.7s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+@keyframes dropAndBounce {
+  0% {
+    opacity: 0;
+    transform: translateY(-150px);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(12px); /* ارتداد بسيط لأسفل */
+  }
+  80% {
+    transform: translateY(-4px); /* ارتداد لأعلى */
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0); /* الثبات في الموقع الأساسي */
+  }
+}

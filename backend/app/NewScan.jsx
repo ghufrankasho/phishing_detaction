@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import api from "../api/axios";
 import { getErrorMessage } from "../api/getErrorMessage";
 import { VERDICT_LABEL } from "../lib/labels";
+import { useAuth } from "../context/AuthContext"; // same path Layout.jsx uses
 
 const FIELD = {
   url: { label: "الرابط", placeholder: "https://example.com/..." },
@@ -10,12 +11,31 @@ const FIELD = {
   message: { label: "نص الرسالة", placeholder: "الصق نص الرسالة هنا" },
 };
 
+// your original options, each tied to the same permission keys as the nav links
+const OPTIONS = [
+  { value: "url", label: "رابط / نطاق", permission: "manage_domains" },
+  { value: "email", label: "بريد إلكتروني", permission: "manage_emails" },
+  { value: "message", label: "رسالة", permission: "manage_messages" },
+];
+
 export default function NewScan() {
-  const [kind, setKind] = useState("url");
+  const { user } = useAuth();
+ 
+  // keep only the options the user is allowed to use (same check as Layout.jsx)
+  const allowed = OPTIONS.filter((o) =>
+    Array.isArray(user?.permissions)
+      ? user.permissions.includes(o.permission)
+      : user?.[o.permission] === true
+  );
+
+  const [selected, setSelected] = useState("url");
   const [content, setContent] = useState("");
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // if the chosen type isn't allowed, fall back to the first allowed one
+  const kind = allowed.some((o) => o.value === selected) ? selected : allowed[0]?.value;
 
   const handleScan = async (e) => {
     e.preventDefault();
@@ -32,15 +52,17 @@ export default function NewScan() {
     }
   };
 
+  // user has no permission for any type
+  if (!kind) {
+    return (
+      <div className="container">
+        <p className="empty">ليس لديك صلاحية لفحص أي نوع من المحتوى. تواصل مع المسؤول.</p>
+      </div>
+    );
+  }
+
   return (
     <>
-      <section className="hero">
-        <h2>هل هذا آمن؟</h2>
-        <p className="lead">
-          الصق رابطاً أو رسالة أو بريداً، وسنخبرك بمستوى الخطر ولماذا.
-        </p>
-      </section>
-
       <div className="workspace">
         <form className="panel" onSubmit={handleScan}>
           <h3>فحص جديد</h3>
@@ -57,10 +79,10 @@ export default function NewScan() {
           <div className="form-row">
             <div>
               <label htmlFor="kind">نوع المحتوى</label>
-              <select id="kind" value={kind} onChange={(e) => setKind(e.target.value)}>
-                <option value="url">رابط / نطاق</option>
-                <option value="email">بريد إلكتروني</option>
-                <option value="message">رسالة</option>
+              <select id="kind" value={kind} onChange={(e) => setSelected(e.target.value)}>
+                {allowed.map((o) => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
               </select>
             </div>
             <button className="primary" type="submit" disabled={loading}>

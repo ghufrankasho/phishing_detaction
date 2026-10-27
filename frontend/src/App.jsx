@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Layout from "./components/Layout";
+import SplashScreen from "./pages/SplashScreen";  
 import Auth from "./pages/Auth";
 import Welcome from "./pages/Welcome";
 import Overview from "./pages/Overview";
@@ -10,7 +11,6 @@ import NewScan from "./pages/NewScan";
 import ScanList from "./pages/ScanList";
 import ScanDetail from "./pages/ScanDetail"; 
 import Profile from "./pages/Profile";
-         // the new src/auth.js file
 
 function RequireRole({ role, children }) {
   if (!getToken(role)) return <Navigate to="/login" replace />;
@@ -22,9 +22,12 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <Routes>
-
+          {/* الشاشة الافتتاحية تبدأ أولاً عند فتح التطبيق */}
+          <Route path="/" element={<SplashScreen />} />
           
-          <Route path="/" element={<Welcome />} />
+          {/* الانتقال لصفحة الترحيب بعد استكمال الحركة */}
+          <Route path="/welcome" element={<Welcome />} />
+          
           <Route path="/login" element={<Auth initialMode="signin" />} />
 
           <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
@@ -36,7 +39,6 @@ export default function App() {
             <Route path="/scans/:id" element={<ScanDetail />} />
             <Route path="/profile" element={<Profile />} />
           </Route>
-
         </Routes>
       </AuthProvider>
     </BrowserRouter>
