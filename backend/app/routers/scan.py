@@ -16,11 +16,14 @@ router = APIRouter(tags=["scan"])
 @router.post("/scan")
 def scan(data: ScanIn, user: User = Depends(current_user), db: Session = Depends(get_db)):
     content = data.content.strip()
+    
+    # تنظيف الرابط إذا تم إرساله بصيغة ماركداون تالفة
+    if data.kind == "url" and "]" in content and "(" in content:
+        content = content.split("]")[0].split("(")[-1].strip()
+
     if not content:
         raise HTTPException(status_code=400, detail="المحتوى فارغ")
-    if len(content) > 5000:
-        raise HTTPException(status_code=400, detail="المحتوى طويل جداً (الحد الأقصى 5000 حرف)")
-
+    
     result = analyze(data.kind, content)  # analyze the real text...
 
     raw_score = result.get("score")  # analyzer gives 0-1; the column is an int 0-100

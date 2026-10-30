@@ -468,7 +468,7 @@ select:focus {
 .welcome-page-wrapper .welcome-actions { display: flex; gap: 16px; justify-content: center; }
 
 .welcome-container {
-  background-image: url("../public/images/background/image.png");
+  background-image: url("/images/background/image.png");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;

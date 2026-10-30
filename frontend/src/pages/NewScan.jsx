@@ -23,6 +23,7 @@ export default function NewScan() {
     setResult(null);
     setLoading(true);
     try {
+      
       const res = await api.post("/scan", { kind, content });
       setResult(res.data);
     } catch (err) {

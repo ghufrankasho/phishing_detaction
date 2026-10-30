@@ -1,23 +1,25 @@
-"""
-Temporary stand-in for the real detection models.
-
-The web app only calls analyze(kind, content) and expects the dict described
-below. When your real models are ready, replace the body of analyze() with a
-call to them (a function or an HTTP request) and keep the same return shape,
-so nothing else in the app has to change.
-
-Returns:
-    {
-      "verdict": "safe" | "suspicious" | "phishing",
-      "score": 0.0 - 1.0,            # risk level
-      "summary": str,
-      "indicators": [{"title": str, "detail": str}, ...],
-    }
-"""
 import re
 from urllib.parse import urlparse
+from pathlib import Path
+import joblib
+import pandas as pd
+from collections import Counter
 
-URL_WORDS = ["login", "verify", "secure", "account", "update", "bank", "password", "confirm"]
+# --- تحميل نموذج الـ ML الخاص بالروابط ---
+ML_DIR = Path(__file__).parent / "models"
+try:
+    _url_model = joblib.load(ML_DIR / "phishing_url_model.pkl")
+    
+except Exception:
+    _url_model = None
+    _url_features = None
+EXACT_FEATURE_NAMES = [
+    "host_len", "dot_count", "dash_count", "digit_count", "digit_ratio", 
+    "longest_label", "entropy", "has_keyword_host", "is_ip", 
+    "url_len", "path_len", "slash_count", "has_path", "has_query", 
+    "has_keyword_path", "https"
+]
+KEYWORDS = r"login|secure|update|banking|verify|signin|account|confirm|webscr"
 URGENCY = ["عاجل", "urgent", "immediately", "خلال 24", "تعليق", "suspended", "تحقق"]
 SENSITIVE = ["كلمة المرور", "password", "otp", "رمز التحقق", "رقم البطاقة", "card number"]
 PRIZE = ["جائزة", "prize", "winner", "ربحت", "مليون"]
@@ -31,9 +33,95 @@ SUMMARY = {
     "phishing": "مؤشرات قوية على الاحتيال. لا تفتح الرابط ولا تشارك أي معلومات.",
 }
 
+def entropy(s):
+    if not s:
+        return 0
+    c = Counter(s)
+    return -sum(n / len(s) * math.log2(n / len(s)) for n in c.values()) if 'math' in globals() else 0
+
+import math
+
+def _extract_comprehensive_features(url: str) -> dict:
+    u = str(url).strip()
+    low = u.lower()
+    v = u if "://" in u else "http://" + u
+    
+    try:
+        p = urlparse(v)
+        hostname = (p.hostname or "").lower()
+        path = (p.path or "")
+        query = (p.query or "")
+    except ValueError:
+        hostname, path, query = "", "", ""
+        
+    host_n = re.sub(r"^www\.", "", hostname)
+    digits = sum(ch.isdigit() for ch in host_n)
+    
+    # يجب أن تتطابق تماماً مع الميزات التي دربنا النموذج عليها
+    features = {
+        "host_len": len(host_n),
+        "dot_count": host_n.count("."),
+        "dash_count": host_n.count("-"),
+        "digit_count": digits,
+        "digit_ratio": digits / len(host_n) if len(host_n) > 0 else 0,
+        "longest_label": max((len(l) for l in host_n.split(".")), default=0),
+        "entropy": entropy(host_n),
+        "has_keyword_host": int(bool(re.search(KEYWORDS, host_n))),
+        "is_ip": int(bool(re.fullmatch(r"\d{1,3}(\.\d{1,3}){3}", host_n))),
+        "url_len": len(u),
+        "path_len": len(path),
+        "slash_count": u.count("/"),
+        "has_path": int(len(path) > 1),
+        "has_query": int(bool(query)),
+        "has_keyword_path": int(bool(re.search(KEYWORDS, path + query))),
+        "https": int(low.startswith("https://"))
+    }
+    return features
+
+
+def _check_url_with_ml(content):
+    if _url_model is None:
+        return {"verdict": "safe", "score": 0.0, "summary": "النموذج غير محمل", "indicators": []}
+    
+    # تنظيف النص إذا احتوى على أقواس أو ماركداون
+    if "]" in content and "(" in content:
+        content = content.split("]")[0].split("(")[-1].strip()
+    else:
+        content = content.strip()
+    
+    feats = _extract_comprehensive_features(content)
+    
+    # بناء الصف بالترتيب الثابت والصحيح تماماً
+    row_data = [feats.get(name, 0) for name in EXACT_FEATURE_NAMES]
+    row = pd.DataFrame([row_data], columns=EXACT_FEATURE_NAMES)
+    
+    proba = _url_model.predict_proba(row)[0]
+    phishing_idx = list(_url_model.classes_).index(1) if 1 in list(_url_model.classes_) else 1
+    score = float(proba[phishing_idx])
+    
+    if score >= 0.6:
+        verdict = "phishing"
+    elif score >= 0.3:
+        verdict = "suspicious"
+    else:
+        verdict = "safe"
+        
+    indicators = []
+    if feats["https"] == 0:
+        indicators.append({"title": "اتصال غير مشفّر", "detail": "الرابط لا يستخدم بروتوكول HTTPS الآمن."})
+    if feats["is_ip"] == 1:
+        indicators.append({"title": "عنوان IP مباشر", "detail": "الموقع يستخدم عنوان IP بدلاً من اسم نطاق موثوق."})
+    if feats["has_keyword_host"] == 1 or feats["has_keyword_path"] == 1:
+        indicators.append({"title": "كلمات حساسة في الرابط", "detail": "يحتوي الرابط على كلمات مفتاحية مرتبطة بعمليات تسجيل الدخول أو التحقق."})
+
+    return {
+        "verdict": verdict,
+        "score": round(score, 2),
+        "summary": SUMMARY[verdict],
+        "indicators": indicators,
+    }
 
 def _has_any(text, words):
-    """English words match as whole words; Arabic phrases match as substrings."""
     for w in words:
         if w.isascii():
             if re.search(rf"\b{re.escape(w)}\b", text):
@@ -41,52 +129,6 @@ def _has_any(text, words):
         elif w in text:
             return True
     return False
-
-
-def _result(flags):
-    score = round(min(sum(points for points, _, _ in flags), 1.0), 2)
-    if score >= 0.6:
-        verdict = "phishing"
-    elif score >= 0.3:
-        verdict = "suspicious"
-    else:
-        verdict = "safe"
-    return {
-        "verdict": verdict,
-        "score": score,
-        "summary": SUMMARY[verdict],
-        "indicators": [{"title": t, "detail": d} for _, t, d in flags],
-    }
-
-
-def _check_url(content):
-    has_scheme = "://" in content
-    try:
-        parsed = urlparse(content if has_scheme else "http://" + content)
-        host = (parsed.hostname or "").lower()
-    except ValueError:  # malformed link, e.g. an unmatched "[" or "]"
-        return _result([(0.3, "رابط غير صالح", "الرابط مكتوب بصيغة غير صحيحة، وهذا شائع في الروابط المموّهة.")])
-    lowered = content.lower()
-    flags = []  # (points, title, detail)
-
-    if has_scheme and parsed.scheme == "http":
-        flags.append((0.2, "اتصال غير مشفّر", "الرابط يستخدم HTTP بدلاً من HTTPS."))
-    if IP_RE.match(host):
-        flags.append((0.35, "عنوان IP بدلاً من اسم موقع", "المواقع الموثوقة نادراً ما تستخدم عنوان IP مباشرة."))
-    if "@" in content:
-        flags.append((0.25, "الرمز @ داخل الرابط", "يُستخدم أحياناً لإخفاء الوجهة الحقيقية للرابط."))
-    if len(content) > 75:
-        flags.append((0.1, "رابط طويل جداً", "الروابط الطويلة تُستخدم لإخفاء الوجهة."))
-    if host.count(".") > 3:
-        flags.append((0.15, "نطاقات فرعية كثيرة", "كثرة النقاط في اسم الموقع قد تُقلّد موقعاً معروفاً."))
-    if host.count("-") >= 2:
-        flags.append((0.1, "شرطات كثيرة في اسم الموقع", "أسماء المواقع الاحتيالية تحتوي غالباً على عدة شرطات."))
-    if "xn--" in host:
-        flags.append((0.25, "حروف مموّهة في اسم الموقع", "قد يستخدم الموقع حروفاً تشبه حروفاً أخرى لتقليد موقع آخر."))
-    if any(w in lowered for w in URL_WORDS):
-        flags.append((0.15, "كلمات تطلب إجراءً حساساً", "مثل login أو verify أو account داخل الرابط."))
-
-    return _result(flags)
 
 
 def _check_message(content):
@@ -101,11 +143,24 @@ def _check_message(content):
         flags.append((0.25, "وعد بجائزة أو مكسب", "الجوائز المفاجئة أسلوب شائع في الاحتيال."))
     if LINK_RE.search(content):
         flags.append((0.1, "يحتوي على رابط", "افحص الرابط بشكل منفصل قبل فتحه."))
-
-    return _result(flags)
+        
+    score = round(min(sum(points for points, _, _ in flags), 1.0), 2)
+    if score >= 0.6:
+        verdict = "phishing"
+    elif score >= 0.3:
+        verdict = "suspicious"
+    else:
+        verdict = "safe"
+        
+    return {
+        "verdict": verdict,
+        "score": score,
+        "summary": SUMMARY[verdict],
+        "indicators": [{"title": t, "detail": d} for _, t, d in flags],
+    }
 
 
 def analyze(kind, content):
     if kind == "url":
-        return _check_url(content)
+        return _check_url_with_ml(content)
     return _check_message(content)
