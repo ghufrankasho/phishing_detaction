@@ -23,7 +23,6 @@ export default function NewScan() {
     setResult(null);
     setLoading(true);
     try {
-      
       const res = await api.post("/scan", { kind, content });
       setResult(res.data);
     } catch (err) {
@@ -35,8 +34,6 @@ export default function NewScan() {
 
   return (
     <>
-       
-
       <div className="workspace">
         <form className="panel" onSubmit={handleScan}>
           <h3>فحص جديد</h3>

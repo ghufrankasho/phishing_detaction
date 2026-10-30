@@ -57,3 +57,22 @@ def report_result(
     db.add(item)
     db.commit()
     return {"id": item.id, "status": item.status}
+
+@router.get("/scans/{scan_id}")
+def get_scan(scan_id: int, db: Session = Depends(get_db)):
+    scan = db.get(Scan, scan_id)
+    if not scan:
+        raise HTTPException(status_code=404, detail="Scan not found")
+
+    owner = db.get(User, scan.user_id)
+    return {
+        "id": scan.id,
+        "user_id": scan.user_id,
+        "user_name": owner.name if owner else None,
+        "user_email": owner.email if owner else None,
+        "kind": scan.kind,
+        "content": scan.content,
+        "score": scan.score,      # already 0-100 in the database
+        "label": scan.label,
+        "created_at": scan.created_at,
+    }

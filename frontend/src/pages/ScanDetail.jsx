@@ -39,33 +39,16 @@ export default function ScanDetail() {
         <div className="result-head">
           <div>
             <h3>{KIND_LABEL[scan.kind]}</h3>
-            <p className="helper">
-              {scan.domain ? `${scan.domain} • ` : ""}
-              {formatDate(scan.created_at)}
-            </p>
+            <p className="helper">{formatDate(scan.created_at)}</p>
           </div>
-          <div className={`score ${scan.verdict}`} title="نسبة الخطر">
-            {Math.round(scan.score * 100)}%
+          <div className={`score ${scan.label}`} title="نسبة الخطر">
+            {Math.round(scan.score)}%
           </div>
         </div>
 
-        <p className={`verdict ${scan.verdict}`}>
-          <VerdictBadge verdict={scan.verdict} /> {scan.summary}
+        <p className={`verdict ${scan.label}`}>
+          <VerdictBadge verdict={scan.label} />
         </p>
-
-        {scan.indicators.length > 0 && (
-          <>
-            <h3>المؤشرات</h3>
-            <div className="indicators">
-              {scan.indicators.map((item) => (
-                <div className="indicator" key={item.title}>
-                  <strong>{item.title}</strong>
-                  <span>{item.detail}</span>
-                </div>
-              ))}
-            </div>
-          </>
-        )}
 
         <h3 className="section-gap">المحتوى الذي فُحص</h3>
         <div className="detail-content">{scan.content}</div>
