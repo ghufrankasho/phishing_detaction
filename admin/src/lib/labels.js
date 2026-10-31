@@ -1,6 +1,6 @@
 export const VERDICT_LABEL = {
   safe: "آمن",
-  suspicious: "مشبوه",
+
   phishing: "احتيال",
 };
 

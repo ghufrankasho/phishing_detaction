@@ -21,7 +21,7 @@ input, select { padding: 8px 10px; border: 1px solid #cbd2d9; border-radius: 6px
 .pagination { display: flex; gap: 12px; align-items: center; justify-content: center; margin-top: 16px; }
 .badge { padding: 2px 8px; border-radius: 12px; font-size: 12px; background: #ddd; }
 .badge.safe, .badge.whitelist { background: #d4efdf; color: #1e8449; }
-.badge.suspicious { background: #fdebd0; color: #b9770e; }
+
 .badge.phishing, .badge.blacklist { background: #f5b7b1; color: #922b21; }
 .error { color: #c0392b; }
 .login-wrap { display: grid; place-items: center; min-height: 100vh; }

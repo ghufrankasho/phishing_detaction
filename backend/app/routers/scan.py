@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-
+from pydantic import BaseModel
 from app.database import get_db
 from app.dependencies import current_user
 from app.models import Feedback, Scan, User
@@ -12,7 +12,37 @@ from app.utils import mask_sensitive
 # No require_admin here: scanning and reporting are for every logged-in user.
 router = APIRouter(tags=["scan"])
 
+class ScanDeleteIn(BaseModel):
+    ids: list[int]
 
+
+@router.post("/scans/delete")
+def delete_scans(
+    body: ScanDeleteIn,
+    user: User = Depends(current_user),
+    db: Session = Depends(get_db),
+):
+    if not body.ids:
+        raise HTTPException(status_code=400, detail="لم يتم اختيار أي عنصر")
+
+    # Only the user's own scans can be deleted
+    scans = (
+        db.query(Scan)
+        .filter(Scan.id.in_(body.ids), Scan.user_id == user.id)
+        .all()
+    )
+    found_ids = [s.id for s in scans]
+
+    if found_ids:
+        # Feedback rows point to the scan, so remove them first
+        db.query(Feedback).filter(Feedback.scan_id.in_(found_ids)).delete(
+            synchronize_session=False
+        )
+        for s in scans:
+            db.delete(s)
+        db.commit()
+
+    return {"deleted": len(found_ids)}
 @router.post("/scan")
 def scan(data: ScanIn, user: User = Depends(current_user), db: Session = Depends(get_db)):
     content = data.content.strip()
@@ -32,7 +62,7 @@ def scan(data: ScanIn, user: User = Depends(current_user), db: Session = Depends
         kind=data.kind,
         content=mask_sensitive(content),  # ...but only store the masked text
         score=None if raw_score is None else round(raw_score * 100),
-        label=result.get("verdict"),      # safe | suspicious | phishing
+        label=result.get("verdict"),      # safe  | phishing
     )
     db.add(record)
     db.commit()

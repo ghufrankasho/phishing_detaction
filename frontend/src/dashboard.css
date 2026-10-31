@@ -62,11 +62,11 @@
 .stat-num { font-size: 40px; font-weight: 700; line-height: 1.2; margin: 8px 0 12px; }
 .bar { display: flex; height: 8px; border-radius: 99px; overflow: hidden; background: var(--border); margin-bottom: 10px; }
 .bar span.safe { background: var(--safe); }
-.bar span.suspicious { background: var(--warn); }
+ 
 .bar span.phishing { background: var(--danger); }
 .stat-split { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; font-weight: 600; }
 .stat-split .safe { color: var(--safe); }
-.stat-split .suspicious { color: var(--warn); }
+ 
 .stat-split .phishing { color: var(--danger); }
 
 /* ---------- Tables, badges, toolbar ---------- */
@@ -81,7 +81,7 @@ table.data tbody tr:hover { background: var(--side-hover); }
 
 .badge { display: inline-block; padding: 3px 10px; border-radius: 99px; font-size: 12px; font-weight: 700; }
 .badge.safe { background: var(--safe-soft); color: var(--safe); }
-.badge.suspicious { background: var(--warn-soft); color: var(--warn); }
+
 .badge.phishing { background: var(--danger-soft); color: var(--danger); }
 
 .toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }

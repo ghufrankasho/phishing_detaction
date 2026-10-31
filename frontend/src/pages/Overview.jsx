@@ -60,13 +60,12 @@ export default function Overview() {
 
               <div className="bar" aria-hidden="true">
                 <span className="safe" style={{ flex: s.safe }} />
-                <span className="suspicious" style={{ flex: s.suspicious }} />
+                
                 <span className="phishing" style={{ flex: s.phishing }} />
               </div>
               <div className="stat-split">
                 <span className="safe">آمن {s.safe}</span>
-                <span className="suspicious">مشبوه {s.suspicious}</span>
-                <span className="phishing">احتيال {s.phishing}</span>
+                 <span className="phishing">احتيال {s.phishing}</span>
               </div>
 
               {card.kind === "url" && (

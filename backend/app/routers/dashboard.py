@@ -21,35 +21,33 @@ from app.models import Scan, User
 # ADJUST THESE TWO to match how your scan route stores its results
 # ---------------------------------------------------------------------------
 SCORE_MAX = 100  # Scan.score is an int from 0 to SCORE_MAX (higher = riskier)
-LABEL_MAP = {    # stored Scan.label (lowercase) -> safe | suspicious | phishing
+LABEL_MAP = {    # stored Scan.label (lowercase) -> safe  | phishing
     "safe": "safe", "legitimate": "safe", "legit": "safe", "benign": "safe", "ham": "safe",
-    "suspicious": "suspicious", "warning": "suspicious",
+    
     "phishing": "phishing", "malicious": "phishing", "fraud": "phishing",
     "scam": "phishing", "spam": "phishing",
 }
 # ---------------------------------------------------------------------------
 
 KINDS = ("email", "message", "url")
-VERDICTS = ("safe", "suspicious", "phishing")
+VERDICTS = ("safe", "phishing")
 
 SUMMARY = {
     "safe": "لم نجد مؤشرات واضحة على الاحتيال. ومع ذلك، تحقق دائماً من المصدر.",
-    "suspicious": "هناك مؤشرات مريبة. لا تُدخل بياناتك قبل التأكد من المصدر.",
     "phishing": "مؤشرات قوية على الاحتيال. لا تفتح الرابط ولا تشارك أي معلومات.",
 }
 
 
 def verdict_of(scan_label: Optional[str]) -> str:
-    # Anything unrecognised (or missing) shows as "suspicious" rather than
+    # Anything unrecognised (or missing) shows as "phishing" rather than
     # being silently counted as safe.
-    return LABEL_MAP.get((scan_label or "").strip().lower(), "suspicious")
+    return LABEL_MAP.get((scan_label or "").strip().lower(), "phishing")
 
 
 def verdict_clause(verdict: str):
     label = func.lower(func.coalesce(Scan.label, ""))
     in_verdict = label.in_([k for k, v in LABEL_MAP.items() if v == verdict])
-    if verdict == "suspicious":
-        return or_(in_verdict, ~label.in_(list(LABEL_MAP)))
+    
     return in_verdict
 
 
@@ -130,7 +128,7 @@ def stats(db: Session = Depends(get_db), user: User = Depends(current_user)):
 @router.get("/scans")
 def list_scans(
     kind: Optional[Literal["email", "message", "url"]] = None,
-    verdict: Optional[Literal["safe", "suspicious", "phishing"]] = None,
+    verdict: Optional[Literal["safe", "phishing"]] = None,
     page: int = 1,
     limit: int = 10,
     db: Session = Depends(get_db),

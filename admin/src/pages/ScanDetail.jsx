@@ -4,10 +4,10 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { getOne, create } from "../api";
 
 const KIND_LABEL = { url: "Link / Domain", email: "Email", message: "Message" };
-const VERDICT_LABEL = { safe: "Safe", suspicious: "Suspicious", phishing: "Phishing" };
+const VERDICT_LABEL = { safe: "Safe", phishing: "Phishing" };
 const SUMMARY = {
   safe: "No signs of fraud were found. The content appears safe.",
-  suspicious: "Some suspicious signs were found. Verify the sender before acting.",
+ 
   phishing: "Strong signs of fraud. Do not open the link or share any information.",
 };
 

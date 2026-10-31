@@ -350,7 +350,7 @@ select:focus {
 
 .score.safe { color: var(--safe); }
 
-.score.suspicious { color: var(--warn); }
+
 
 .score.phishing { color: var(--danger); }
 
@@ -365,7 +365,7 @@ select:focus {
 
 .verdict.phishing { border-color: var(--danger); background: var(--danger-soft); }
 
-.verdict.suspicious { border-color: var(--warn); background: var(--warn-soft); }
+
 
 .indicators { display: grid; gap: 10px; margin-top: 10px; }
 
@@ -674,7 +674,7 @@ select:focus {
 
 .bar span.safe { background: var(--safe); }
 
-.bar span.suspicious { background: var(--warn); }
+ 
 
 .bar span.phishing { background: var(--danger); }
 
@@ -682,7 +682,7 @@ select:focus {
 
 .stat-split .safe { color: var(--safe); }
 
-.stat-split .suspicious { color: var(--warn); }
+ 
 
 .stat-split .phishing { color: var(--danger); }
 
@@ -716,7 +716,7 @@ table.data tbody tr:hover { background: var(--side-hover); }
 
 .badge.safe { background: var(--safe-soft); color: var(--safe); }
 
-.badge.suspicious { background: var(--warn-soft); color: var(--warn); }
+
 
 .badge.phishing { background: var(--danger-soft); color: var(--danger); }
 

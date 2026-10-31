@@ -3,22 +3,26 @@ import { Link } from "react-router-dom";
 import api from "../api/axios";
 import { getErrorMessage } from "../api/getErrorMessage";
 import VerdictBadge from "../components/VerdictBadge";
+import ConfirmDialog from "../components/ConfirmDialog";
 import { formatDate } from "../lib/labels";
 
 const LIMIT = 10;
 
-// One page component reused for emails, messages and domains.
-// Give each route its own key so the state resets when you switch pages.
 export default function ScanList({ kind, title }) {
   const [verdict, setVerdict] = useState("");
   const [page, setPage] = useState(1);
   const [data, setData] = useState(null);
   const [error, setError] = useState("");
+  const [selected, setSelected] = useState([]);
+  const [deleting, setDeleting] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false); // controls the dialog
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
     setData(null);
     setError("");
+    setSelected([]);
     api
       .get("/scans", {
         params: { kind, verdict: verdict || undefined, page, limit: LIMIT },
@@ -28,10 +32,44 @@ export default function ScanList({ kind, title }) {
     return () => {
       cancelled = true;
     };
-  }, [kind, verdict, page]);
+  }, [kind, verdict, page, reloadKey]);
 
   const pages = data ? Math.max(1, Math.ceil(data.total / LIMIT)) : 1;
   const isUrl = kind === "url";
+
+  const pageIds = data ? data.items.map((s) => s.id) : [];
+  const allSelected = pageIds.length > 0 && pageIds.every((id) => selected.includes(id));
+
+  const toggleOne = (id) => {
+    setSelected((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  };
+
+  const toggleAll = () => {
+    setSelected(allSelected ? [] : pageIds);
+  };
+
+  // Runs when the user clicks "Delete" inside the dialog
+  const confirmDelete = async () => {
+    setDeleting(true);
+    setError("");
+    try {
+      await api.post("/scans/delete", { ids: selected });
+
+      // If we deleted every row on this page, go back one page
+      if (selected.length === data.items.length && page > 1) {
+        setPage(page - 1);
+      } else {
+        setReloadKey((k) => k + 1);
+      }
+    } catch (err) {
+      setError(getErrorMessage(err, "فشل الحذف"));
+    } finally {
+      setDeleting(false);
+      setConfirmOpen(false);
+    }
+  };
 
   return (
     <div className="container">
@@ -52,9 +90,19 @@ export default function ScanList({ kind, title }) {
           >
             <option value="">كل النتائج</option>
             <option value="safe">آمن</option>
-            <option value="suspicious">مشبوه</option>
             <option value="phishing">احتيال</option>
           </select>
+
+          {selected.length > 0 && (
+            <button
+              className="link-btn"
+              onClick={() => setConfirmOpen(true)}
+              disabled={deleting}
+            >
+              {deleting ? "جارٍ الحذف..." : `حذف المحدد (${selected.length})`}
+            </button>
+          )}
+
           <Link className="back-link" to="/scan">+ فحص جديد</Link>
         </div>
 
@@ -70,6 +118,14 @@ export default function ScanList({ kind, title }) {
             <table className="data">
               <thead>
                 <tr>
+                  <th>
+                    <input
+                      type="checkbox"
+                      aria-label="تحديد الكل"
+                      checked={allSelected}
+                      onChange={toggleAll}
+                    />
+                  </th>
                   {isUrl && <th>النطاق</th>}
                   <th>المحتوى</th>
                   <th>النتيجة</th>
@@ -80,6 +136,14 @@ export default function ScanList({ kind, title }) {
               <tbody>
                 {data.items.map((s) => (
                   <tr key={s.id}>
+                    <td>
+                      <input
+                        type="checkbox"
+                        aria-label="تحديد"
+                        checked={selected.includes(s.id)}
+                        onChange={() => toggleOne(s.id)}
+                      />
+                    </td>
                     {isUrl && <td>{s.domain}</td>}
                     <td className="preview">
                       <Link to={`/scans/${s.id}`}>{s.preview}</Link>
@@ -106,6 +170,17 @@ export default function ScanList({ kind, title }) {
           </div>
         )}
       </section>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        title="هل أنت متأكد من حذف العناصر المحددة؟"
+        message="لا يمكن التراجع عن هذا الإجراء."
+        details={[`عدد العناصر: ${selected.length}`]}
+        confirmText="حذف"
+        cancelText="إلغاء"
+        onCancel={() => setConfirmOpen(false)}
+        onConfirm={confirmDelete}
+      />
     </div>
   );
 }

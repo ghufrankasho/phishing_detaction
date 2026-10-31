@@ -20,9 +20,9 @@ LSTM_SAFE_LABEL = 1   # the LSTM's sigmoid output is P(safe)
 
 # --- Thresholds on PHISHING risk (0 = safe, 1 = phishing) ---
 URL_PHISHING_T = 0.6
-URL_SUSPICIOUS_T = 0.3
+ 
 LSTM_PHISHING_T = 0.6
-LSTM_SUSPICIOUS_T = 0.3
+ 
 
 # 1. تحميل نموذج الروابط (RandomForest)
 try:
@@ -72,7 +72,7 @@ LINK_RE = re.compile(r"https?://\S+|www\.\S+", re.I)
 
 SUMMARY = {
     "safe": "لم نجد مؤشرات واضحة على الاحتيال. ومع ذلك، تحقق دائماً من المصدر.",
-    "suspicious": "هناك مؤشرات مريبة. لا تُدخل بياناتك قبل التأكد من المصدر.",
+    
     "phishing": "مؤشرات قوية على الاحتيال. لا تفتح الرابط ولا تشارك أي معلومات.",
 }
 
@@ -84,12 +84,11 @@ def entropy(s):
     return -sum(n / len(s) * math.log2(n / len(s)) for n in c.values())
 
 
-def _verdict_from_risk(risk: float, phishing_t: float, suspicious_t: float) -> str:
+def _verdict_from_risk(risk: float, phishing_t: float) -> str:
     """risk = phishing probability (close to 1 = phishing)."""
     if risk >= phishing_t:
         return "phishing"
-    if risk >= suspicious_t:
-        return "suspicious"
+     
     return "safe"
 
 
@@ -150,7 +149,7 @@ def _check_url_with_ml(content):
     safe_prob = float(proba[safe_idx])
     risk = 1.0 - safe_prob
 
-    verdict = _verdict_from_risk(risk, URL_PHISHING_T, URL_SUSPICIOUS_T)
+    verdict = _verdict_from_risk(risk, URL_PHISHING_T)
 
     indicators = []
     if feats["https"] == 0:
@@ -179,7 +178,7 @@ def _check_text_with_lstm(content: str):
     safe_prob = float(_lstm_model.predict(padded, verbose=0)[0][0])
     risk = 1.0 - safe_prob   # close to 1 = phishing
 
-    verdict = _verdict_from_risk(risk, LSTM_PHISHING_T, LSTM_SUSPICIOUS_T)
+    verdict = _verdict_from_risk(risk, LSTM_PHISHING_T)
 
     indicators = []
     if verdict != "safe":
