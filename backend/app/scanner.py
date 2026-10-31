@@ -3,7 +3,9 @@ import math
 from collections import Counter
 from pathlib import Path
 from urllib.parse import urlparse
+ 
 
+import numpy as np
 import joblib
 import pandas as pd
 from tensorflow.keras.models import Sequential
@@ -73,7 +75,7 @@ LINK_RE = re.compile(r"https?://\S+|www\.\S+", re.I)
 SUMMARY = {
     "safe": "لم نجد مؤشرات واضحة على الاحتيال. ومع ذلك، تحقق دائماً من المصدر.",
     
-    "phishing": "مؤشرات قوية على الاحتيال. لا تفتح الرابط ولا تشارك أي معلومات.",
+    "phishing": "مؤشرات قوية على الاحتيال. لا تفتح المصدر ولا تشارك أي معلومات.",
 }
 
 
@@ -195,6 +197,7 @@ def _check_text_with_lstm(content: str):
     }
 
 
+ 
 def analyze(kind, content):
     if kind == "url":
         return _check_url_with_ml(content)

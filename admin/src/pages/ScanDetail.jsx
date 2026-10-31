@@ -8,7 +8,7 @@ const VERDICT_LABEL = { safe: "Safe", phishing: "Phishing" };
 const SUMMARY = {
   safe: "No signs of fraud were found. The content appears safe.",
  
-  phishing: "Strong signs of fraud. Do not open the link or share any information.",
+  phishing: "Strong signs of fraud. Do not open the content or share any information.",
 };
 
  

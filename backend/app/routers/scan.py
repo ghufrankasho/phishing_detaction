@@ -8,7 +8,11 @@ from app.scanner import analyze
 from app.schemas.feedback import FeedbackCreate
 from app.schemas.scan import ScanIn
 from app.utils import mask_sensitive
-
+import re
+import cv2
+import numpy as np
+from fastapi import File, UploadFile
+ 
 # No require_admin here: scanning and reporting are for every logged-in user.
 router = APIRouter(tags=["scan"])
 
@@ -88,6 +92,58 @@ def report_result(
     db.commit()
     return {"id": item.id, "status": item.status}
 
+
+MAX_IMAGE_BYTES = 5 * 1024 * 1024  # 5 MB
+URL_RE = re.compile(r"^(https?://|www\.)\S+$", re.I)
+
+
+def _decode_qr(image_bytes: bytes) -> str | None:
+    """Return the text inside a QR code image, or None if none is found."""
+    arr = np.frombuffer(image_bytes, dtype=np.uint8)
+    img = cv2.imdecode(arr, cv2.IMREAD_COLOR)
+    if img is None:
+        return None
+    text, _, _ = cv2.QRCodeDetector().detectAndDecode(img)
+    return text.strip() or None
+
+
+@router.post("/scan/barcode")
+def scan_barcode(
+    file: UploadFile = File(...),
+    user: User = Depends(current_user),
+    db: Session = Depends(get_db),
+):
+    if not (file.content_type or "").startswith("image/"):
+        raise HTTPException(status_code=400, detail="الملف ليس صورة")
+
+    image_bytes = file.file.read(MAX_IMAGE_BYTES + 1)
+    if len(image_bytes) > MAX_IMAGE_BYTES:
+        raise HTTPException(status_code=400, detail="حجم الصورة كبير (الحد 5 ميغابايت)")
+
+    content = _decode_qr(image_bytes)
+    if not content:
+        raise HTTPException(status_code=400, detail="تعذّرت قراءة الباركود من الصورة")
+
+    content = content[:5000]  # same limit as normal scans
+
+    # A URL goes to the URL model, anything else goes to the text model
+    kind = "url" if URL_RE.match(content) else "message"
+
+    result = analyze(kind, content)
+
+    raw_score = result.get("score")
+    record = Scan(
+        user_id=user.id,
+        kind=kind,
+        content=mask_sensitive(content),
+        score=None if raw_score is None else round(raw_score * 100),
+        label=result.get("verdict"),
+    )
+    db.add(record)
+    db.commit()
+    db.refresh(record)
+
+    return {**result, "scan_id": record.id, "kind": kind, "content": content}
 @router.get("/scans/{scan_id}")
 def get_scan(scan_id: int, db: Session = Depends(get_db)):
     scan = db.get(Scan, scan_id)
