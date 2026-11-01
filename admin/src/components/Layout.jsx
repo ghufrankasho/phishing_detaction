@@ -5,6 +5,7 @@ export default function Layout() {
   const navigate = useNavigate();
   const user = getUser();
   const links = [
+    ["/home", "Home"],
     ["/users", "Users & Permissions"],
     ["/messages", "Messages"],
     ["/emails", "Emails"],

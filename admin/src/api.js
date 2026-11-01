@@ -65,3 +65,22 @@ export const getOne = (r, id) => request(`/${r}/${id}`).then((x) => x.data);
 export const create = (r, body) => request(`/${r}`, { method: "POST", body: JSON.stringify(body) });
 export const update = (r, id, body) => request(`/${r}/${id}`, { method: "PUT", body: JSON.stringify(body) });
 export const remove = (r, id) => request(`/${r}/${id}`, { method: "DELETE" });
+
+// Admin dashboard
+export const getStats = () => request("/admin/stats").then((x) => x.data);
+
+// Admin: every scan from every user (all filters are optional)
+export const listScans = ({ kind = "", verdict = "", q = "", page = 1, limit = 10 } = {}) => {
+  const qs = new URLSearchParams({ page, limit });
+  if (kind) qs.set("kind", kind);
+  if (verdict) qs.set("verdict", verdict);
+  if (q) qs.set("q", q);
+  return request(`/admin/scans?${qs}`).then((x) => x.data);
+};
+
+// Admin: one scan with its full content and owner
+export const getScanDetail = (id) => request(`/admin/scans/${id}`).then((x) => x.data);
+
+// Admin: delete one or many scans
+export const deleteScans = (ids) =>
+  request("/admin/scans/delete", { method: "POST", body: JSON.stringify({ ids }) }).then((x) => x.data);

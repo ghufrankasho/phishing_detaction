@@ -4,7 +4,7 @@ import { getErrorMessage } from "../api/getErrorMessage";
 
 const VERDICT_LABEL = {
   safe: "آمن",
-  suspicious: "مشبوه",
+ 
   phishing: "احتيال",
 };
 

@@ -70,7 +70,7 @@ export default function ScanList({ kind, title }) {
           >
             <option value=""> All Result</option>
             <option value="safe">Safe</option>
-            <option value="suspicious">Suspicious</option>
+           
             <option value="phishing">Phishing</option>
           </select>
           <Link className="back-link" to="/scan">New Test +</Link>

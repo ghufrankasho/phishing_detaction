@@ -11,7 +11,7 @@ class FeedbackCreate(BaseModel):
 
 class FeedbackReview(BaseModel):
     status: Literal["pending", "accepted", "rejected"]
-    correct_label: Literal["safe", "suspicious", "phishing"] | None = None
+    correct_label: Literal["safe", "phishing"] | None = None
 
     @model_validator(mode="after")
     def label_needed_when_accepting(self):
