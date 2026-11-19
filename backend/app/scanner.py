@@ -3,6 +3,7 @@ import math
 from collections import Counter
 from pathlib import Path
 from urllib.parse import urlparse
+from deep_translator import MyMemoryTranslator
  
 
 import numpy as np
@@ -197,10 +198,32 @@ def _check_text_with_lstm(content: str):
     }
 
 
- 
+
+
+def detect_language(text):
+  # Regex range for Arabic characters
+  arabic_pattern = re.compile(r"[\u0600-\u06ff\u0750-\u077f\u08a0-\u08ff]")
+
+  if arabic_pattern.search(text):
+    return "ar"
+  else:
+    return "en"  # Or check for English specifically if needed
+
+
+
 def analyze(kind, content):
     if kind == "url":
         return _check_url_with_ml(content)
     if kind in ("email", "message"):
+        if detect_language(content) == "ar":
+            # Initialize MyMemory translator (free public tier)
+            
+            translator = MyMemoryTranslator(source="ar-SA", target="en-GB")
+
+            text = translator.translate(content)
+            content = text
+
+ 
+           
         return _check_text_with_lstm(content)
     raise ValueError(f"Unsupported kind: {kind}")

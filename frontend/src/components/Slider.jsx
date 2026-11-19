@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination, Navigation } from "swiper/modules";
 
@@ -18,7 +19,7 @@ export default function CyberSlider() {
     {
       id: 2,
       buttonText: "ابدأ التدريب",
-      link: "/training",
+      link: "/training", // سنربط هذا الاختبار بصفحة التدريب أو مسار مخصص
       image: "/images/sliders/slider2.jpg",
     },
     {
@@ -30,7 +31,7 @@ export default function CyberSlider() {
   ];
 
   return (
-    <div dir="rtl" >
+    <div dir="rtl">
       <Swiper
         modules={[Autoplay, Pagination, Navigation]}
         spaceBetween={20}
@@ -46,7 +47,6 @@ export default function CyberSlider() {
           "--swiper-pagination-color": "#17a2b8",
           "--swiper-navigation-color": "#17a2b8",
           width: "100%",
-           
           overflow: "hidden",
           boxShadow: "0 0 25px rgba(23, 162, 184, 0.2)"
         }}
@@ -57,57 +57,40 @@ export default function CyberSlider() {
               style={{
                 position: "relative",
                 backgroundImage: `url(${slide.image})`,
-                // Changed from "cover" to "contain" so the full image displays
                 backgroundSize: "contain",
                 backgroundRepeat: "no-repeat",
-                backgroundPosition: "center", // Ensures the image is centered and covers the area
-                backgroundColor: "#070f1e", // Background color to fill any empty side gaps neatly
+                backgroundPosition: "center",
+                backgroundColor: "#070f1e",
                 width: "100%",
-                height: "400px", // Fixed height for the slider
+                height: "400px",
                 textAlign: "right",
                 color: "#ffffff",
-               
-                minHeight: "450px", // Increased height slightly to accommodate full image views
+                minHeight: "450px",
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "center",
                 alignItems: "flex-start",
               }}
             >
-              {/* Action Button positioned at the bottom-left corner */}
-               <a
-
-                href={slide.link}
-
+              <Link
+                to={slide.link}
                 style={{
-
                   position: "absolute",
-
                   bottom: "25px",
-
                   left: "25px",
-
                   padding: "10px 30px",
-
+                  backgroundColor: "#17a2b8",
                   color: "rgb(255, 255, 255)",
-
                   border: "none",
-
                   borderRadius: "6px",
-
                   fontWeight: "bold",
-
                   textDecoration: "none",
-
                   cursor: "pointer",
-
                   boxShadow: "0 0 10px rgba(255, 255, 255, 0.4)"
-
                 }}
-
               >
                 {slide.buttonText}
-              </a>
+              </Link>
             </div>
           </SwiperSlide>
         ))}

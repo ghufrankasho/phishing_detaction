@@ -1,7 +1,9 @@
 import { useEffect, useState, useCallback } from "react";
 import { listScans, getScanDetail, deleteScans } from "../api";
+import { exportScansToExcel, exportScansToPDF } from "../lib/exportUtils";
 import Pagination from "../components/Pagination";
 import ConfirmDialog from "../components/ConfirmDialog";
+//nnnnn
 
 const KINDS = {
   message: { title: "Messages", icon: "💬", color: "#14B8A6", hint: "Search message text, user name or email…" },
@@ -85,18 +87,18 @@ export default function AdminScans({ kind = "message" }) {
 
   const [verdict, setVerdict] = useState("");
   const [search, setSearch] = useState("");
-  const [q, setQ] = useState(""); // debounced search text
+  const [q, setQ] = useState("");
   const [page, setPage] = useState(1);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [selected, setSelected] = useState([]);
-  const [panel, setPanel] = useState(null); // { id, loading, item }
-  const [toDelete, setToDelete] = useState(null); // array of ids
+  const [panel, setPanel] = useState(null);
+  const [toDelete, setToDelete] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
 
-  // Wait until the admin stops typing before searching
   useEffect(() => {
     const t = setTimeout(() => {
       setQ(search.trim());
@@ -122,7 +124,6 @@ export default function AdminScans({ kind = "message" }) {
     };
   }, [kind, verdict, q, page, reloadKey]);
 
-  // Close the side panel with the Escape key
   useEffect(() => {
     const onKey = (e) => e.key === "Escape" && setPanel(null);
     window.addEventListener("keydown", onKey);
@@ -130,8 +131,8 @@ export default function AdminScans({ kind = "message" }) {
   }, []);
 
   const items = data?.items || [];
-  const counts = data?.counts || { safe: 0,  phishing: 0 };
-  const allCount = counts.safe  + counts.phishing;
+  const counts = data?.counts || { safe: 0, phishing: 0 };
+  const allCount = counts.safe + counts.phishing;
 
   const pageIds = items.map((s) => s.id);
   const allSelected = pageIds.length > 0 && pageIds.every((id) => selected.includes(id));
@@ -156,7 +157,6 @@ export default function AdminScans({ kind = "message" }) {
     try {
       await deleteScans(toDelete);
       if (panel && toDelete.includes(panel.id)) setPanel(null);
-      // Deleted every row on a page after the first? Go back one page.
       if (toDelete.length >= items.length && page > 1) setPage(page - 1);
       else setReloadKey((k) => k + 1);
     } catch (e) {
@@ -167,12 +167,44 @@ export default function AdminScans({ kind = "message" }) {
     }
   };
 
+  // Export selected rows or fetch all matching rows under the current filters
+  const handleExport = async (format) => {
+    setExporting(true);
+    setError("");
+    try {
+      let rowsToExport = [];
+      if (selected.length > 0) {
+        rowsToExport = items.filter((s) => selected.includes(s.id));
+      } else {
+        const total = data?.total || 1000;
+        const res = await listScans({ kind, verdict, q, page: 1, limit: Math.max(total, 1000) });
+        rowsToExport = res?.items || [];
+      }
+
+      if (rowsToExport.length === 0) {
+        setError("No records available to export.");
+        return;
+      }
+
+      if (format === "excel") {
+        exportScansToExcel(rowsToExport, { kind, title: cfg.title });
+      } else {
+        exportScansToPDF(rowsToExport, { kind, title: cfg.title });
+      }
+    } catch (e) {
+      setError(e.message || "Failed to export records");
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const filters = [
     { key: "", label: "All", count: allCount },
     { key: "safe", label: "Safe", count: counts.safe },
-    
     { key: "phishing", label: "Phishing", count: counts.phishing },
   ];
+
+  const exportSuffix = selected.length > 0 ? ` (${selected.length})` : "";
 
   return (
     <div style={{ padding: 20, background: "#f4f7fb", minHeight: "100%" }}>
@@ -197,7 +229,6 @@ export default function AdminScans({ kind = "message" }) {
           <h1 style={{ fontSize: 26, fontWeight: 700, margin: 0 }}>
             {cfg.icon} {cfg.title}
           </h1>
-           
         </div>
 
         <div style={{ position: "relative", width: "min(340px, 100%)" }}>
@@ -225,7 +256,7 @@ export default function AdminScans({ kind = "message" }) {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16, marginBottom: 20 }}>
         <StatCard label="Total" value={allCount} icon={cfg.icon} color={cfg.color} />
         <StatCard label="Safe" value={counts.safe} icon="✅" color="#10B981" />
-         <StatCard label="Phishing" value={counts.phishing} icon="🛡️" color="#EF4444" />
+        <StatCard label="Phishing" value={counts.phishing} icon="🛡️" color="#EF4444" />
       </div>
 
       {error && (
@@ -266,17 +297,58 @@ export default function AdminScans({ kind = "message" }) {
             })}
           </div>
 
-          {selected.length > 0 && (
+          {/* Right Toolbar Actions: Export Excel / PDF & Bulk Delete */}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
             <button
               type="button"
               className="as-act"
-              onClick={() => setToDelete(selected)}
-              disabled={deleting}
-              style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: "#dc2626", color: "#fff", cursor: "pointer", fontWeight: 600, fontSize: 13 }}
+              onClick={() => handleExport("excel")}
+              disabled={exporting || allCount === 0}
+              style={{
+                padding: "8px 14px",
+                borderRadius: 8,
+                border: "1px solid #bbf7d0",
+                background: "#f0fdf4",
+                color: "#15803d",
+                cursor: exporting || allCount === 0 ? "not-allowed" : "pointer",
+                fontWeight: 600,
+                fontSize: 13,
+              }}
             >
-              🗑 Delete selected ({selected.length})
+              📊 Export Excel{exportSuffix}
             </button>
-          )}
+
+            <button
+              type="button"
+              className="as-act"
+              onClick={() => handleExport("pdf")}
+              disabled={exporting || allCount === 0}
+              style={{
+                padding: "8px 14px",
+                borderRadius: 8,
+                border: "1px solid #fecaca",
+                background: "#fef2f2",
+                color: "#b91c1c",
+                cursor: exporting || allCount === 0 ? "not-allowed" : "pointer",
+                fontWeight: 600,
+                fontSize: 13,
+              }}
+            >
+              📄 Export PDF{exportSuffix}
+            </button>
+
+            {selected.length > 0 && (
+              <button
+                type="button"
+                className="as-act"
+                onClick={() => setToDelete(selected)}
+                disabled={deleting}
+                style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: "#dc2626", color: "#fff", cursor: "pointer", fontWeight: 600, fontSize: 13 }}
+              >
+                🗑 Delete selected ({selected.length})
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Table */}
@@ -455,7 +527,7 @@ export default function AdminScans({ kind = "message" }) {
               <button
                 type="button"
                 onClick={() => setPanel(null)}
-                style={{ padding: "8px 16px", borderRadius: 8, border: "1px solid #dbe3ec", background: "rgb(54 51 51)", cursor: "pointer" }}
+                style={{ padding: "8px 16px", borderRadius: 8, border: "1px solid #dbe3ec", background: "rgb(54 51 51)", color: "#fff", cursor: "pointer" }}
               >
                 Close
               </button>
