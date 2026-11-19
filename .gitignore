@@ -5,3 +5,8 @@ frontend/dist/
 .env
 __pycache__/
 *.pyc
+backend/venv/
+backend/venv312/venv/
+venv312/
+__pycache__/
+.env
