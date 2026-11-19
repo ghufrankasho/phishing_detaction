@@ -11,6 +11,10 @@ import NewScan from "./pages/NewScan";
 import ScanList from "./pages/ScanList";
 import ScanDetail from "./pages/ScanDetail"; 
 import Profile from "./pages/Profile";
+import Quiz from "./pages/Quiz"; // استيراد صفحة الاختبار 
+import Contact from "./pages/Contact"; // استيراد صفحة الاتصال  
+import Services from "./pages/Services";
+
 
 function RequireRole({ role, children }) {
   if (!getToken(role)) return <Navigate to="/login" replace />;
@@ -29,7 +33,7 @@ export default function App() {
           <Route path="/welcome" element={<Welcome />} />
           
           <Route path="/login" element={<Auth initialMode="signin" />} />
-
+          <Route path="/contact" element={<Contact />} />
           <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
             <Route path="/dashboard" element={<Overview />} />
             <Route path="/scan" element={<NewScan />} />
@@ -38,6 +42,8 @@ export default function App() {
             <Route path="/domains" element={<ScanList key="url" kind="url" title="النطاقات والروابط" />} />
             <Route path="/scans/:id" element={<ScanDetail />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/training" element={<Quiz />} />
+            <Route path="/services" element={<Services />} />
           </Route>
         </Routes>
       </AuthProvider>
