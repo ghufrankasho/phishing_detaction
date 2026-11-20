@@ -3,19 +3,35 @@ import api from "../api/axios";
 import { getErrorMessage } from "../api/getErrorMessage";
 import { useAuth } from "../context/AuthContext";
 
+const PHONE_PREFIX = "+963 ";
 const EMPTY_PW = { current_password: "", new_password: "", new_password_confirmation: "" };
 const EMPTY_EMP = {
   department: "", position: "", employee_number: "",
-  hire_date: "", phone: "", extension: "", notes: "",
+  hire_date: "", phone: PHONE_PREFIX, extension: "", notes: "",
 };
- 
 
-// server -> form: nulls become empty strings
-const toForm = (data) =>
-  Object.fromEntries(Object.keys(EMPTY_EMP).map((k) => [k, data[k] ?? ""]));
-// form -> server: empty strings become null
+// server -> form: nulls become empty strings, phone defaults to "+963 "
+const toForm = (data) => {
+  const base = Object.fromEntries(Object.keys(EMPTY_EMP).map((k) => [k, data[k] ?? ""]));
+  if (!base.phone) {
+    base.phone = PHONE_PREFIX;
+  } else if (!base.phone.startsWith("+963")) {
+    base.phone = `${PHONE_PREFIX}${base.phone.replace(/^\+?\s*/, "")}`;
+  }
+  return base;
+};
+
+// form -> server: empty strings (or bare "+963") become null
 const toPayload = (form) =>
-  Object.fromEntries(Object.entries(form).map(([k, v]) => [k, v.trim() === "" ? null : v.trim()]));
+  Object.fromEntries(
+    Object.entries(form).map(([k, v]) => {
+      const trimmed = v.trim();
+      if (trimmed === "" || (k === "phone" && (trimmed === "+963" || trimmed === "+963 "))) {
+        return [k, null];
+      }
+      return [k, trimmed];
+    })
+  );
 
 export default function Profile() {
   const { user, setUser } = useAuth();
@@ -85,6 +101,15 @@ export default function Profile() {
 
   const handleEmpChange = (e) => setEmp({ ...emp, [e.target.name]: e.target.value });
 
+  const handlePhoneChange = (e) => {
+    let val = e.target.value;
+    if (!val.startsWith(PHONE_PREFIX)) {
+      const digitsOnly = val.replace(/^\+?963\s*/, "").replace(/[^\d\s-]/g, "");
+      val = PHONE_PREFIX + digitsOnly;
+    }
+    setEmp((prev) => ({ ...prev, phone: val }));
+  };
+
   const saveEmployee = async (e) => {
     e.preventDefault();
     setEmpMsg({ type: "", text: "" });
@@ -104,25 +129,22 @@ export default function Profile() {
     <div className="container">
       <div className="page-head">
         <h2 className="page-title">الملف الشخصي</h2>
-
       </div>
 
       <div className="profile-grid">
-
         {/* ---------------- employee details ---------------- */}
         <form className="panel profile-wide" onSubmit={saveEmployee}>
           <h3>بيانات الموظف</h3>
 
-
           <div className="field-grid">
             <div className="field">
-            <label htmlFor="department"><i className="bx bxs-envelope"></i>القسم  </label>
-            <input id="department" type="department" value={user.department || ""} disabled />
-          </div>
+              <label htmlFor="department"><i className="bx bxs-envelope"></i>القسم</label>
+              <input id="department" type="department" value={user.department || ""} disabled />
+            </div>
 
             <div className="field">
-            <label htmlFor="position"><i className="bx bxs-envelope"></i> المنصب</label>
-            <input id="position" type="position" value={user.position || ""} disabled />
+              <label htmlFor="position"><i className="bx bxs-envelope"></i> المنصب</label>
+              <input id="position" type="position" value={user.position || ""} disabled />
             </div>
 
             <div className="field">
@@ -142,8 +164,8 @@ export default function Profile() {
             <div className="field">
               <label htmlFor="phone"><i className="bx bxs-phone"></i>رقم الهاتف</label>
               <input id="phone" name="phone" type="tel" className="ltr"
-                value={emp.phone} onChange={handleEmpChange}
-                maxLength={30} placeholder="+963 ..." disabled={!empLoaded} />
+                value={emp.phone} onChange={handlePhoneChange}
+                maxLength={30} placeholder="+963 9XX XXX XXX" disabled={!empLoaded} />
             </div>
 
             <div className="field">
@@ -166,6 +188,7 @@ export default function Profile() {
 
           {empMsg.text && <p className={empMsg.type}>{empMsg.text}</p>}
         </form>
+
         {/* ---------------- password ---------------- */}
         <form className="panel" onSubmit={changePassword}>
           <h3>تغيير كلمة المرور</h3>
@@ -198,6 +221,7 @@ export default function Profile() {
 
           {pwMsg.text && <p className={pwMsg.type}>{pwMsg.text}</p>}
         </form>
+
         {/* ---------------- account ---------------- */}
         <form className="panel" onSubmit={saveName}>
           <h3>معلومات الحساب</h3>
@@ -220,9 +244,6 @@ export default function Profile() {
 
           {nameMsg.text && <p className={nameMsg.type}>{nameMsg.text}</p>}
         </form>
-
-
-
       </div>
     </div>
   );

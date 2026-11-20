@@ -5,6 +5,7 @@ import { getErrorMessage } from "../api/getErrorMessage";
 import VerdictBadge from "../components/VerdictBadge";
 import ConfirmDialog from "../components/ConfirmDialog";
 import { formatDate } from "../lib/labels";
+import { exportUserScansToExcel, exportUserScansToPDF } from "../lib/userExportUtils";
 
 const LIMIT = 10;
 
@@ -50,6 +51,24 @@ export default function ScanList({ kind, title }) {
     setSelected(allSelected ? [] : pageIds);
   };
 
+  const getRowsForExport = () => {
+    const items = data?.items || [];
+    if (selected.length > 0) {
+      return items.filter((s) => selected.includes(s.id));
+    }
+    return items;
+  };
+
+  const handleExportExcel = () => {
+    const rows = getRowsForExport();
+    exportUserScansToExcel(rows, { kind, isUrl, formatDateFn: formatDate });
+  };
+
+  const handleExportPDF = () => {
+    const rows = getRowsForExport();
+    exportUserScansToPDF(rows, { kind, title, isUrl, formatDateFn: formatDate });
+  };
+
   // Runs when the user clicks "Delete" inside the dialog
   const confirmDelete = async () => {
     setDeleting(true);
@@ -70,6 +89,9 @@ export default function ScanList({ kind, title }) {
       setConfirmOpen(false);
     }
   };
+
+  const hasExportableRows = (data?.items?.length || 0) > 0;
+  const exportLabelSuffix = selected.length > 0 ? ` (${selected.length})` : "";
 
   return (
     <div className="container">
@@ -102,6 +124,24 @@ export default function ScanList({ kind, title }) {
               {deleting ? "جارٍ الحذف..." : `حذف المحدد (${selected.length})`}
             </button>
           )}
+
+          <button
+            type="button"
+            className="link-btn"
+            onClick={handleExportExcel}
+            disabled={!hasExportableRows}
+          >
+            تصدير Excel{exportLabelSuffix}
+          </button>
+
+          <button
+            type="button"
+            className="link-btn"
+            onClick={handleExportPDF}
+            disabled={!hasExportableRows}
+          >
+            تصدير PDF{exportLabelSuffix}
+          </button>
 
           <Link className="back-link" to="/scan">+ فحص جديد</Link>
         </div>
